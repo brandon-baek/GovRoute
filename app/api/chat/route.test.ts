@@ -13,6 +13,12 @@ describe("free guidance endpoint", () => {
     expect((await response.json()).journey.id).toBe("journey-ca-unemployment"); expect(routeWithAI).not.toHaveBeenCalled(); vi.unstubAllEnvs();
   });
   it("routes cross-state requests to the planner", async () => { const body = await (await POST(request({message:"moving from New York to Texas"}))).json(); expect(body.alternatives[0].href).toBe("/moving"); });
+  it("asks for the destination when a vehicle move names only its origin", async () => {
+    const body = await (await POST(request({message:"moving from New York with a car"}))).json();
+    expect(body.status).toBe("clarify");
+    expect(body.alternatives[0].href).toBe("/moving");
+    expect(body.journey).toBeUndefined();
+  });
   it("routes a single-state license transfer to its published procedure", async () => {
     const body = await (await POST(request({message:"transfer out-of-state license to Texas",state:"TX"}))).json();
     expect(body.status).toBe("matched");
