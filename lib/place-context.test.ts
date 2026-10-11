@@ -16,5 +16,9 @@ describe("location evidence", () => {
     expect(requiresParcelEvidence("What are my land rights?")).toBe(true);
     expect(requiresParcelEvidence("Can I build an ADU?")).toBe(true);
     expect(requiresParcelEvidence("How do I build a business?")).toBe(false);
+    expect(requiresParcelEvidence("Report damaged public property")).toBe(false);
+    expect(requiresParcelEvidence("Can I build on public property?")).toBe(true);
+    expect(requiresParcelEvidence("Report public property damage near my parcel boundary")).toBe(true);
+    expect(requiresParcelEvidence("Report damage on my property")).toBe(true);
   });
 });

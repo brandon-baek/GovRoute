@@ -310,6 +310,358 @@
           }
         ]
       }
+    },
+    {
+      "authority_id": "authority:tx-dps",
+      "topic": "driver_license",
+      "territory": {
+        "state_code": "TX"
+      },
+      "journey": {
+        "id": "journey-tx-license-transfer",
+        "slug": "transfer-an-out-of-state-license-to-texas",
+        "title": "Transfer an out-of-state driver's license to Texas",
+        "summary": "For adults with a valid U.S. state license: complete vehicle prerequisites, prepare documents, and apply at Texas DPS.",
+        "category": "Driving and transportation",
+        "jurisdiction": "state",
+        "state": "TX",
+        "audience": [
+          "Texas residents age 18+ with a valid, unexpired U.S. state driver's license"
+        ],
+        "aliases": [
+          "transfer out-of-state license",
+          "transfer license to Texas",
+          "Texas license after moving",
+          "new Texas resident license"
+        ],
+        "eligibility": [
+          "This route covers adults transferring a valid, unexpired noncommercial license from another U.S. state.",
+          "Minors, learner permits, expired licenses, foreign licenses, and commercial licenses need their own DPS instructions."
+        ],
+        "officialAction": {
+          "url": "https://www.dps.texas.gov/section/driver-license/moving-texas-guide-driver-licenses-and-ids",
+          "label": "Check my Texas transfer route"
+        },
+        "steps": [
+          {
+            "id": "route",
+            "title": "Check your transfer eligibility",
+            "detail": "A qualifying valid license permits driving for up to 90 days after moving. Surrender it when applying; qualifying adults do not take knowledge or skills exams.",
+            "deadlines": [
+              "Up to 90 days after moving with a qualifying valid, unexpired license."
+            ],
+            "sourceIds": [
+              "tx-license-moving"
+            ],
+            "action": {
+              "url": "https://www.dps.texas.gov/section/driver-license/moving-texas-guide-driver-licenses-and-ids",
+              "label": "Check transfer rules"
+            }
+          },
+          {
+            "id": "vehicles",
+            "title": "Complete vehicle prerequisites",
+            "detail": "Register each vehicle you own in Texas before applying. Prepare registration and insurance evidence; if you own no vehicle, provide the required statement.",
+            "dependsOn": [
+              "route"
+            ],
+            "sourceIds": [
+              "tx-license-moving",
+              "tx-license-apply"
+            ],
+            "action": {
+              "url": "https://www.txdmv.gov/motorists/new-to-texas",
+              "label": "Open vehicle registration instructions"
+            }
+          },
+          {
+            "id": "documents",
+            "title": "Gather your application documents",
+            "detail": "Use the DPS document checklist for citizenship or lawful presence, identity, Texas residency, and Social Security number. Enter sensitive information only on official applications.",
+            "requirements": [
+              "Identity and citizenship or lawful-presence evidence.",
+              "Texas residency evidence and Social Security number.",
+              "Your out-of-state license and applicable vehicle documents."
+            ],
+            "dependsOn": [
+              "route"
+            ],
+            "sourceIds": [
+              "tx-license-apply"
+            ],
+            "action": {
+              "url": "https://www.dps.texas.gov/section/driver-license/apply-texas-driver-license",
+              "label": "Open the DPS document checklist"
+            }
+          },
+          {
+            "id": "visit",
+            "title": "Apply at your DPS appointment",
+            "detail": "Schedule through the DPS appointment link. Bring the completed application and documents, surrender your license, pay the applicable fee, and complete photo, signature, thumbprint, and vision checks. Review the temporary license for errors.",
+            "fees": [
+              "Check the current fee through the DPS application page."
+            ],
+            "dependsOn": [
+              "vehicles",
+              "documents"
+            ],
+            "sourceIds": [
+              "tx-license-apply",
+              "tx-license-moving"
+            ],
+            "action": {
+              "url": "https://www.dps.texas.gov/section/driver-license/apply-texas-driver-license",
+              "label": "Schedule and prepare my DPS visit"
+            }
+          }
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-11",
+        "sources": [
+          {
+            "id": "tx-license-moving",
+            "title": "Moving to Texas: driver licenses and IDs",
+            "url": "https://www.dps.texas.gov/section/driver-license/moving-texas-guide-driver-licenses-and-ids",
+            "publisher": "Texas Department of Public Safety",
+            "lastChecked": "2026-10-11"
+          },
+          {
+            "id": "tx-license-apply",
+            "title": "Apply for a Texas driver license",
+            "url": "https://www.dps.texas.gov/section/driver-license/apply-texas-driver-license",
+            "publisher": "Texas Department of Public Safety",
+            "lastChecked": "2026-10-11"
+          }
+        ]
+      }
+    },
+    {
+      "authority_id": "authority:ny-dmv",
+      "topic": "vehicle_registration",
+      "territory": {
+        "state_code": "NY"
+      },
+      "journey": {
+        "id": "journey-ny-plate-surrender",
+        "slug": "surrender-new-york-plates-before-changing-insurance",
+        "title": "Surrender New York vehicle plates before changing insurance",
+        "summary": "Return New York plates and registration before canceling New York liability coverage when registering your car in another state.",
+        "category": "Driving and transportation",
+        "jurisdiction": "state",
+        "state": "NY",
+        "audience": [
+          "Owners of New York-registered passenger cars moving their registration to another state"
+        ],
+        "aliases": [
+          "surrender NY plates",
+          "surrender New York plates",
+          "return NY plates",
+          "cancel New York insurance",
+          "canceling insurance",
+          "plate surrender"
+        ],
+        "eligibility": [
+          "This route covers passenger cars with New York plates available to return.",
+          "Motorcycles, trailers, and lost or stolen plates have separate instructions."
+        ],
+        "officialAction": {
+          "url": "https://dmv.ny.gov/registration/surrender-return-or-turn-in-your-vehicle-plates-and-registration",
+          "label": "Open official plate surrender instructions"
+        },
+        "steps": [
+          {
+            "id": "insurance",
+            "title": "Keep New York coverage until surrender",
+            "detail": "Out-of-state insurance does not cover a New York registration for DMV purposes. Surrender New York plates and registration before ending New York liability coverage.",
+            "sourceIds": [
+              "ny-moving",
+              "ny-plate-surrender"
+            ],
+            "action": {
+              "url": "https://dmv.ny.gov/more-info/moving-to-or-from-new-york-state",
+              "label": "Check the insurance sequence"
+            }
+          },
+          {
+            "id": "prepare",
+            "title": "Prepare the plates and PD-7",
+            "detail": "Complete PD-7 for each plate set. Remove frames and fasteners and destroy windshield registration and inspection stickers. For mail returns, update your registration address and arrange mail forwarding.",
+            "requirements": [
+              "Plates without frames or fasteners.",
+              "Completed PD-7 for each set."
+            ],
+            "dependsOn": [
+              "insurance"
+            ],
+            "sourceIds": [
+              "ny-plate-surrender"
+            ],
+            "action": {
+              "url": "https://dmv.ny.gov/registration/surrender-return-or-turn-in-your-vehicle-plates-and-registration",
+              "label": "Find PD-7 and preparation instructions"
+            }
+          },
+          {
+            "id": "return",
+            "title": "Return the plates and keep the receipt",
+            "detail": "Mail the plates and PD-7 in an envelope to the current official address, or bring them to a DMV office. Retain the FS-6T receipt. The mail postmark counts as the surrender date.",
+            "fees": [
+              "County motor vehicle offices charge $1 to process surrender."
+            ],
+            "deadlines": [
+              "Allow 21 days for a mailed receipt; contact DMV if it does not arrive."
+            ],
+            "dependsOn": [
+              "prepare"
+            ],
+            "sourceIds": [
+              "ny-plate-surrender"
+            ],
+            "action": {
+              "url": "https://dmv.ny.gov/registration/surrender-return-or-turn-in-your-vehicle-plates-and-registration",
+              "label": "Choose mail or office surrender"
+            }
+          },
+          {
+            "id": "change",
+            "title": "Coordinate registration and insurance",
+            "detail": "After surrender, confirm registration and insurance requirements in the destination state. Keep evidence of surrender and new coverage.",
+            "dependsOn": [
+              "return"
+            ],
+            "sourceIds": [
+              "ny-moving"
+            ],
+            "action": {
+              "url": "https://dmv.ny.gov/more-info/moving-to-or-from-new-york-state",
+              "label": "Check the next-state handoff"
+            }
+          }
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-11",
+        "sources": [
+          {
+            "id": "ny-moving",
+            "title": "Moving to or from New York State",
+            "url": "https://dmv.ny.gov/more-info/moving-to-or-from-new-york-state",
+            "publisher": "New York State Department of Motor Vehicles",
+            "lastChecked": "2026-10-11"
+          },
+          {
+            "id": "ny-plate-surrender",
+            "title": "Surrender your vehicle plates and registration",
+            "url": "https://dmv.ny.gov/registration/surrender-return-or-turn-in-your-vehicle-plates-and-registration",
+            "publisher": "New York State Department of Motor Vehicles",
+            "lastChecked": "2026-10-11"
+          }
+        ]
+      }
+    },
+    {
+      "authority_id": "authority:sf311",
+      "topic": "public_property_repair",
+      "territory": {
+        "geoid": "0667000",
+        "kind": "municipality"
+      },
+      "journey": {
+        "id": "journey-sf-damaged-public-property",
+        "slug": "report-damaged-public-property-in-san-francisco",
+        "title": "Report damaged public property in San Francisco",
+        "summary": "Report a damaged sidewalk bench, bike rack, parking meter, transit shelter, or another listed public object to San Francisco 311 and track the request.",
+        "category": "Local services",
+        "jurisdiction": "local",
+        "state": "CA",
+        "locality": "San Francisco",
+        "audience": [
+          "People reporting a listed damaged public object in San Francisco"
+        ],
+        "aliases": [
+          "damaged public property",
+          "broken bench",
+          "damaged bench",
+          "broken bike rack",
+          "broken parking meter",
+          "damaged transit shelter"
+        ],
+        "eligibility": [
+          "This route covers the public objects listed by SF311 in San Francisco.",
+          "For damaged traffic signals, call 311; parking and traffic signs use a separate report."
+        ],
+        "officialAction": {
+          "url": "https://www.sf.gov/report-damaged-public-property",
+          "label": "Open the SF311 reporting page"
+        },
+        "steps": [
+          {
+            "id": "prepare",
+            "title": "Describe the object and location",
+            "detail": "Collect the location, object type, any object identification number, and damage description. Add a photo if available.",
+            "requirements": [
+              "Location and object type.",
+              "Object ID, if present, and damage description.",
+              "Photo, if available."
+            ],
+            "sourceIds": [
+              "sf-damaged-public-property"
+            ],
+            "action": {
+              "url": "https://www.sf.gov/report-damaged-public-property",
+              "label": "Check what I can report"
+            }
+          },
+          {
+            "id": "report",
+            "title": "Submit through SF311",
+            "detail": "Use the Report link on the official page. Alternatively, call 311 within San Francisco or 415-701-2311 from outside the city; TTY users can call 711.",
+            "dependsOn": [
+              "prepare"
+            ],
+            "sourceIds": [
+              "sf-damaged-public-property",
+              "sf311-information"
+            ],
+            "action": {
+              "url": "https://www.sf.gov/report-damaged-public-property",
+              "label": "Start my official report"
+            }
+          },
+          {
+            "id": "track",
+            "title": "Keep your tracking number",
+            "detail": "Use the 311 tracking number to follow the case online or in the SF311 app. Response times depend on the object and damage; inspection and repair may differ.",
+            "dependsOn": [
+              "report"
+            ],
+            "sourceIds": [
+              "sf-damaged-public-property"
+            ],
+            "action": {
+              "url": "https://www.sf.gov/report-damaged-public-property",
+              "label": "Find case tracking instructions"
+            }
+          }
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-11",
+        "sources": [
+          {
+            "id": "sf-damaged-public-property",
+            "title": "Report damaged public property",
+            "url": "https://www.sf.gov/report-damaged-public-property",
+            "publisher": "San Francisco 311",
+            "lastChecked": "2026-10-11"
+          },
+          {
+            "id": "sf311-information",
+            "title": "Get information from 311",
+            "url": "https://www.sf.gov/get-information-311",
+            "publisher": "San Francisco 311",
+            "lastChecked": "2026-10-11"
+          }
+        ]
+      }
     }
   ]
 }

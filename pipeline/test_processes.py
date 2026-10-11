@@ -17,6 +17,9 @@ class ProcessPublicationTests(unittest.TestCase):
         dataset(self.db, "fixture", "https://www.census.gov", "Census", "fixture")
         self.db.execute("INSERT INTO places(id,name,search_name,kind,name_status,government_status,dataset_id) VALUES('country:US','United States','united states','country','official','active','fixture')")
         self.state = add_census(self.db, {"GEOID": "06", "NAME": "California", "STUSAB": "CA", "STATE": "06", "FUNCSTAT": "A"}, "state", "fixture", 80)
+        self.tx = add_census(self.db, {"GEOID":"48","NAME":"Texas","STUSAB":"TX","STATE":"48","FUNCSTAT":"A"}, "state", "fixture", 80)
+        self.ny = add_census(self.db, {"GEOID":"36","NAME":"New York","STUSAB":"NY","STATE":"36","FUNCSTAT":"A"}, "state", "fixture", 80)
+        self.sf = add_census(self.db, {"GEOID":"0667000","NAME":"San Francisco city","STUSAB":"CA","STATE":"06","FUNCSTAT":"A"}, "municipality", "fixture", 28)
         load_manifest(self.db, ROOT / "data/registry/sources.json")
         self.db.commit()
         self.manifest = json.loads((ROOT / "data/registry/processes.json").read_text())
@@ -32,9 +35,14 @@ class ProcessPublicationTests(unittest.TestCase):
                 return load_processes(self.db, file)
 
     def test_publishes_sourced_steps_with_explicit_state_and_federal_scopes(self):
-        self.assertEqual(self.publish(), 2)
-        self.assertEqual(self.db.execute("SELECT territory_id FROM process_publications ORDER BY process_id").fetchall(), [(self.state,), ("country:US",)])
-        self.assertEqual(self.db.execute("SELECT count(*) FROM process_steps").fetchone()[0], 9)
+        self.assertEqual(self.publish(), 5)
+        scopes = dict(self.db.execute("SELECT process_id,territory_id FROM process_publications").fetchall())
+        self.assertEqual(scopes, {
+            "journey-ca-new-resident": self.state, "journey-passport-apply": "country:US",
+            "journey-tx-license-transfer": self.tx, "journey-ny-plate-surrender": self.ny,
+            "journey-sf-damaged-public-property": self.sf,
+        })
+        self.assertEqual(self.db.execute("SELECT count(*) FROM process_steps").fetchone()[0], 20)
         document = json.loads(self.db.execute("SELECT document_json FROM process_publications WHERE process_id='journey-passport-apply'").fetchone()[0])
         self.assertEqual(document["steps"][1]["dependsOn"], ["choose"])
         self.assertTrue(document["steps"][2]["fees"])
@@ -87,7 +95,7 @@ class ProcessPublicationTests(unittest.TestCase):
 
 
     def scoped_fixture(self, kind):
-        tx=add_census(self.db,{"GEOID":"48","NAME":"Texas","STUSAB":"TX","STATE":"48","FUNCSTAT":"A"},"state","fixture",80)
+        tx=self.tx
         town=add_census(self.db,{"GEOID":"4812345","NAME":"Fixture city","STUSAB":"TX","STATE":"48","FUNCSTAT":"A"},"municipality","fixture",28)
         self.db.execute("INSERT INTO authorities VALUES('fixture-office',NULL,'Fixture office','state','https://fixture.gov','reviewed')")
         self.db.execute("INSERT INTO legal_sources(id,authority_id,topic,title,url,source_kind,reviewed_at) VALUES('fixture-source','fixture-office','test_service','Fixture service','https://fixture.gov/service','procedure','2026-10-09')")

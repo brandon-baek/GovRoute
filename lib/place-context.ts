@@ -29,7 +29,11 @@ export function geographyReferences(match: CensusMatch) {
 }
 
 export function requiresParcelEvidence(query: string) {
-  return /\b(land|property|parcel|zoning|easement|setback|deed|covenant|fence|adu|boundary)\b/i.test(query);
+  if (/\b(land|parcel|zoning|easement|setback|deed|covenant|fence|adu|boundary)\b/i.test(query)) return true;
+  // Reporting damaged public objects does not ask for parcel or ownership rights.
+  const serviceReport = /\breport\b/i.test(query) && /\b(damag(?:e|ed)|broken)\b/i.test(query);
+  const propertyQuery = serviceReport ? query.replace(/\bpublic property\b/gi, "") : query;
+  return /\bproperty\b/i.test(propertyQuery);
 }
 
 export const parcelRequirements = [

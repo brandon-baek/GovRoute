@@ -88,12 +88,52 @@ try {
   await record("oversized request contract","/api/chat",{message:"x".repeat(9000)},(data,response)=>{assert.equal(response.status,413);assert.deepEqual(data.alternatives,[]);});
   await record("cross-state moving flow","/api/chat",{message:"moving from New York to Texas"},data=>{assert.equal(data.status,"clarify");assert.equal(data.alternatives[0].href,"/moving");});
   await record("CA scoped process catalog","/api/processes?state=CA",undefined,data=>assert.equal(data.processes.length,2));
-  await record("TX scoped process catalog","/api/processes?state=TX",undefined,data=>{assert.equal(data.processes.length,1);assert.equal(data.processes[0].jurisdiction,"federal");});
+  await record("TX scoped process catalog","/api/processes?state=TX",undefined,data=>{assert.deepEqual(data.processes.map((journey:{id:string})=>journey.id).sort(),["journey-passport-apply","journey-tx-license-transfer"]);});
   await record("process catalog derives state from selected place","/api/processes?id="+encodeURIComponent(cdp.id),undefined,data=>assert.equal(data.processes.length,2));
   await record("process catalog rejects state-place conflict","/api/processes?state=TX&id="+encodeURIComponent(cdp.id),undefined,(_,response)=>assert.equal(response.status,400));
   await record("process catalog rejects unknown place","/api/processes?id=missing-place",undefined,(_,response)=>assert.equal(response.status,404));
   await record("country process catalog stays federal","/api/processes?id=country%3AUS",undefined,data=>{
     assert.equal(data.processes.length,1);assert.equal(data.processes[0].jurisdiction,"federal");
+  });
+  await record("TX license transfer uses vehicle prerequisites","/api/chat",{message:"transfer out-of-state license to Texas",state:"TX"},data=>{
+    assert.equal(data.status,"matched");assert.equal(data.journey.id,"journey-tx-license-transfer");
+    assert.equal(data.provenance.processStorage,"registry-process-catalog");
+    assert.deepEqual(data.journey.steps.find((step:{id:string})=>step.id==="visit").dependsOn,["vehicles","documents"]);
+    assert.ok(data.journey.steps.every((step:{sourceIds:string[]})=>step.sourceIds.every(id=>data.journey.sources.some((source:{id:string})=>source.id===id))));
+  });
+  await record("NY plates precede insurance change","/api/chat",{message:"surrender NY plates before canceling insurance",state:"NY"},data=>{
+    assert.equal(data.status,"matched");assert.equal(data.journey.id,"journey-ny-plate-surrender");
+    assert.deepEqual(data.journey.steps.at(-1).dependsOn,["return"]);
+  });
+  const sf=db.prepare("SELECT id FROM places WHERE geoid='0667000' AND kind='municipality'").get() as {id:string};
+  const oakland=db.prepare("SELECT id FROM places WHERE geoid='0653000' AND kind='municipality'").get() as {id:string};
+  assert.ok(sf && oakland,"Real reviewed and neighboring city scopes must exist");
+  await record("SF exact local catalog","/api/processes?id="+encodeURIComponent(sf.id),undefined,data=>{
+    assert.equal(data.processes.length,3);
+    assert.ok(data.processes.some((journey:{id:string})=>journey.id==="journey-sf-damaged-public-property"));
+  });
+  await record("SF damaged public property report","/api/chat",{message:"Report damaged public property",placeIds:[sf.id]},data=>{
+    assert.equal(data.status,"matched");assert.equal(data.journey.id,"journey-sf-damaged-public-property");
+    assert.equal(data.provenance.processStorage,"registry-process-catalog");
+    assert.deepEqual(data.journey.territoryIds,[sf.id]);assert.equal(data.journey.steps.length,3);
+    assert.ok(data.journey.sources.every((source:{url:string})=>source.url.startsWith("https://www.sf.gov/")));
+  });
+  await record("SF broken bench follows local route","/api/chat",{message:"Report a broken bench",state:"CA",placeIds:[sf.id]},data=>{
+    assert.equal(data.status,"matched");assert.equal(data.journey.id,"journey-sf-damaged-public-property");
+  });
+  for (const [name,body] of [
+    ["neighboring city does not inherit SF service",{message:"Report a broken bench",state:"CA",placeIds:[oakland.id]}],
+    ["state alone does not certify SF service",{message:"Report a broken bench",state:"CA"}],
+    ["typed SF locality does not certify scope",{message:"Report a broken bench",state:"CA",locality:"San Francisco"}],
+    ["SF service rejects a different selected state",{message:"Report a broken bench",state:"TX",placeIds:[sf.id]}],
+  ] as const) {
+    await record(name,"/api/chat",body,data=>{
+      assert.notEqual(data.journey?.id,"journey-sf-damaged-public-property");
+      assert.ok(["coverage_gap","clarify"].includes(data.status),name+": unexpected route "+data.status);
+    });
+  }
+  await record("SF property rights still need parcel evidence","/api/chat",{message:"Can I build an ADU on my property?",placeIds:[sf.id]},data=>{
+    assert.equal(data.status,"coverage_gap");assert.equal(data.journey,undefined);assert.equal(data.missing.length,3);
   });
   const unofficial=db.prepare("SELECT n.name,n.place_id,p.state_code FROM place_names n JOIN places p ON p.id=n.place_id WHERE n.status='unofficial' AND length(n.name)>3 AND length(n.name)<80 AND (SELECT count(*) FROM place_names other WHERE other.search_name=n.search_name)=1 LIMIT 1").get() as {name:string;place_id:string;state_code:string};
   await record("unofficial name labeling","/api/places?"+new URLSearchParams({q:unofficial.name,...(unofficial.state_code?{state:unofficial.state_code}:{})}),undefined,data=>{
@@ -101,6 +141,15 @@ try {
   });
   for (const page of ["/","/data","/guides/apply-for-or-renew-a-passport","/moving"]) {
     const response=await fetch(base+page);assert.equal(response.status,200,"Website page "+page);
+  }
+  for (const [slug,marker] of [
+    ["transfer-an-out-of-state-license-to-texas","Transfer an out-of-state"],
+    ["surrender-new-york-plates-before-changing-insurance","Surrender New York vehicle plates"],
+    ["report-damaged-public-property-in-san-francisco","Report damaged public property in San Francisco"],
+  ]) {
+    const response=await fetch(base+"/guides/"+slug);
+    assert.equal(response.status,200,"Published guide page "+slug);
+    assert.ok((await response.text()).includes(marker),"Published content missing on "+slug);
   }
   const summary={passed:results.length,statesCovered:states.map(state=>state.state_code),maximumMilliseconds:Math.max(...results.map(row=>row.milliseconds)),results};
   writeFileSync("data/govroute-scenario-results.json",JSON.stringify(summary,null,2)+"\n");

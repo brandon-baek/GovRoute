@@ -71,16 +71,17 @@ export async function POST(request: NextRequest) {
     if (contextStates.length > 1 || (body.state && contextStates.length === 1 && body.state !== contextStates[0])) return NextResponse.json({ status: "clarify", message: "Your location crosses state boundaries or differs from the selected state. Choose the state whose process you need.", alternatives: [] });
     const locations = statesInText(body.message);
     const federalPassport = /\bpassport\b/i.test(body.message);
+    const location = body.state ?? contextStates[0] ?? locations[0]?.code;
     // Moving is a specific multi-state pathway, not the default route for any
     // request mentioning a move (e.g. passport renewal after moving).
     if (/\b(mov(?:e|ed|ing)|relocat(?:e|ing)|another state|out.of.state)\b/i.test(body.message)
       && !federalPassport
-      && (locations.length > 1 || /\b(driver|driving|license|vehicle|registration|car|moving checklist)\b/i.test(body.message))) {
+      && (locations.length > 1 || /\bmoving checklist\b/i.test(body.message)
+        || (!location && /\b(driver|driving|license|vehicle|registration|car)\b/i.test(body.message)))) {
       return NextResponse.json({ status: "clarify", message: "Moving between states? Choose your origin and destination in the moving planner to combine both jurisdictions into one checklist.", alternatives: [{ id: "moving", slug: "", title: "Build my moving checklist", href: "/moving" }] });
     }
     if (!federalPassport && !body.state && locations.length > 1) return NextResponse.json({ status: "clarify", message: "Which state's rules should I use? Choose a state above or use the moving planner for a cross-state process.", alternatives: [] });
     if (!federalPassport && body.state && locations.length === 1 && body.state !== locations[0].code) return NextResponse.json({ status: "clarify", message: "Your request names a different state from the selected location. Choose the state whose rules you need, then try again.", alternatives: [] });
-    const location = body.state ?? contextStates[0] ?? locations[0]?.code;
     if (requiresParcelEvidence(body.message)) {
       const sources = await relevantLegalSources(context?.places.map((place) => place.id) ?? [], "property");
       const directoryResources = await localResources(context, body.message);

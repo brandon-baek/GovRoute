@@ -13,6 +13,18 @@ describe("free guidance endpoint", () => {
     expect((await response.json()).journey.id).toBe("journey-ca-unemployment"); expect(routeWithAI).not.toHaveBeenCalled(); vi.unstubAllEnvs();
   });
   it("routes cross-state requests to the planner", async () => { const body = await (await POST(request({message:"moving from New York to Texas"}))).json(); expect(body.alternatives[0].href).toBe("/moving"); });
+  it("routes a single-state license transfer to its published procedure", async () => {
+    const body = await (await POST(request({message:"transfer out-of-state license to Texas",state:"TX"}))).json();
+    expect(body.status).toBe("matched");
+    expect(body.journey.id).toBe("journey-tx-license-transfer");
+    expect(body.journey.steps.find((step: {id: string}) => step.id==="visit").dependsOn).toEqual(["vehicles","documents"]);
+  });
+  it("routes New York plate surrender to its insurance dependency", async () => {
+    const body = await (await POST(request({message:"surrender NY plates before canceling insurance",state:"NY"}))).json();
+    expect(body.status).toBe("matched");
+    expect(body.journey.id).toBe("journey-ny-plate-surrender");
+    expect(body.journey.steps.at(-1).dependsOn).toEqual(["return"]);
+  });
   it("keeps passport renewal task-first after a move", async () => { const body = await (await POST(request({message:"renew passport after moving from New York to Texas"}))).json(); expect(body.status).toBe("matched"); expect(body.journey.jurisdiction).toBe("federal"); });
   it("serves prepared passport steps without a mounted registry", async () => {
     const body = await (await POST(request({message:"How do I renew my passport?"}))).json();

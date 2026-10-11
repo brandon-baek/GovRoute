@@ -10,7 +10,10 @@ The production HTTP suite runs against the real national serving database, with 
 | Find an informal community name | GNIS name crosswalk | Matching record explicitly labels the unofficial name |
 | Choose a Census-designated place | Statistical versus functioning government | No fabricated municipal authority |
 | Ask whether an ADU is legal on a property | Location context, property guard, source scopes | Parcel, zoning, and recorded restrictions remain explicit gaps |
-| Request a reviewed local procedure | Exact territory IDs, reviewed source scope, chat routing | Reviewed steps appear only in the matching municipality; a coverage gap does not override a published route |
+| Report a damaged public object in San Francisco | Exact Census municipal ID, SF311 topic scope, citations, request tracking | Three reviewed steps; public-object reports bypass the parcel guard |
+| Report the same problem in Oakland, with only California selected, or with a typed SF locality | Scope isolation, stable ID validation | SF311 instructions do not appear; missing coverage stays explicit |
+| Transfer a valid adult out-of-state license to Texas | Single-state task routing, DPS sources, vehicle prerequisite dependencies | Four reviewed steps; license appointment depends on vehicle and document preparation |
+| Return New York plates before changing insurance | Origin-state scope, dependency ordering, PD-7, receipt and fee information | Four reviewed steps; insurance handoff follows plate surrender |
 | Request a local building permit | CISA inventory, government-name matching, local crawl, chat response | Official local starting points with unreviewed procedure labels |
 | Supply a postal locality as free text | Stable jurisdiction IDs, scope safety | Free text cannot certify a municipal service area |
 | Select a California community while choosing Texas | Location validation | Clarification; no other-state instructions |
@@ -26,7 +29,7 @@ The production HTTP suite runs against the real national serving database, with 
 
 Importer tests reject truncated Census pagination, duplicate domain records, changed inventory headers, ambiguous government-name matches, external redirects, and inferred topic competence. Projection tests compare stable IDs, names, foreign keys, source types, and search behavior with the full archive.
 
-The HTTP suite also requests the homepage, data page, passport guide, and moving page from the production build. Rendered layout still needs browser verification; these tests verify successful HTML responses and API behavior.
+The HTTP suite also requests the homepage, data page, passport guide, moving page, and each newly published state/local guide from the production build. Rendered layout still needs browser verification; these tests verify successful HTML responses and API behavior.
 
 The interstate matrix also checks every supported origin/destination pair with and without a vehicle. Texas license applications depend on registration when a vehicle is brought; New York plate/insurance instructions remain tied to the origin. Unknown destinations receive official-directory planning questions without fabricated deadlines. Source review expires after 30 days.
 

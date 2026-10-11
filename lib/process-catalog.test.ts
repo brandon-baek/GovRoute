@@ -17,6 +17,20 @@ describe("published process routing", () => {
     expect(bundledProcessesForState("CA").some((journey) => journey.id === "journey-ca-new-resident")).toBe(true);
   });
 
+  it("keeps the new state procedures in their reviewed states", () => {
+    const texas = bundledProcessesForState("TX");
+    expect(texas.map(journey=>journey.id).sort()).toEqual(["journey-passport-apply","journey-tx-license-transfer"]);
+    expect(bundledProcessesForState("NY").map(journey=>journey.id).sort()).toEqual(["journey-ny-plate-surrender","journey-passport-apply"]);
+    expect(bundledProcessesForState("CA").some(journey=>journey.id==="journey-ny-plate-surrender")).toBe(false);
+  });
+
+  it("requires a resolved municipal scope before offering a bundled local guide", () => {
+    expect(processJourneys.some(journey=>journey.id==="journey-sf-damaged-public-property")).toBe(true);
+    for (const state of [undefined,"CA","TX"]) {
+      expect(bundledProcessesForState(state).some(journey=>journey.jurisdiction==="local")).toBe(false);
+    }
+  });
+
   it("updates an older SQL passport document without duplicate identities", () => {
     const updated = processJourneys.find((journey) => journey.id === "journey-passport-apply")!;
     const old = { ...updated, reviewedAt: "2020-01-01", steps: [updated.steps[0]] };
