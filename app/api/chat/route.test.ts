@@ -40,6 +40,12 @@ describe("free guidance endpoint", () => {
     expect(body.journey.steps[2].fees).toHaveLength(2);
     expect(body.provenance.processStorage).toBe("bundled-process-catalog");
   });
+  it("shows a local coverage gap when only a typed SF locality is supplied", async () => {
+    const body = await (await POST(request({message:"Report a broken bench",state:"CA",locality:"San Francisco"}))).json();
+    expect(body.status).toBe("coverage_gap");
+    expect(body.journey).toBeUndefined();
+    expect(body.alternatives).toEqual([]);
+  });
   it("shows missing property records rather than deciding rights", async () => { const body = await (await POST(request({message:"What are my land rights in my exact home?",state:"CA"}))).json(); expect(body.status).toBe("coverage_gap"); expect(body.steps).toHaveLength(3); expect(body.journey).toBeUndefined(); });
   it("clarifies conflicting state selection", async () => { const body = await (await POST(request({message:"unemployment in Texas",state:"CA"}))).json(); expect(body.status).toBe("clarify"); expect(body.journey).toBeUndefined(); });
   it("rejects oversized requests and malformed JSON", async () => {

@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
         provenance: { router: "discovered-guide-index", assembledFrom: [bestDiscovered.guide.sourceId] }
       });
     }
-    if ((classification !== "matched" || matches[0]?.journey.jurisdiction !== "local" || !processIds.has(matches[0].journey.id)) && /\b(building permit|construction permit|trash collection|garbage collection|sewer service|water service|local ordinance)\b/i.test(body.message)) {
+    if ((classification !== "matched" || matches[0]?.journey.jurisdiction !== "local" || !processIds.has(matches[0].journey.id)) && /\b(building permit|construction permit|trash collection|garbage collection|sewer service|water service|local ordinance|damaged public property|(?:broken|damaged) (?:bench|bike rack|parking meter|transit shelter))\b/i.test(body.message)) {
       if (!location && !context?.places.length) return NextResponse.json({status:"clarify",message:"Choose a community or address area so I can find official local starting points.",alternatives:[]});
       const directoryResources=await localResources(context,body.message);
       return NextResponse.json({status:"coverage_gap",title:"Find your local service",message:"This local procedure has not been verified for your selected area yet.",alternatives:[],

@@ -129,7 +129,7 @@ try {
   ] as const) {
     await record(name,"/api/chat",body,data=>{
       assert.notEqual(data.journey?.id,"journey-sf-damaged-public-property");
-      assert.ok(["coverage_gap","clarify"].includes(data.status),name+": unexpected route "+data.status);
+      assert.equal(data.status,name==="SF service rejects a different selected state"?"clarify":"coverage_gap",name);
     });
   }
   await record("SF property rights still need parcel evidence","/api/chat",{message:"Can I build an ADU on my property?",placeIds:[sf.id]},data=>{
