@@ -22,12 +22,13 @@ browse government hierarchies to renew a passport.
   than an unsupported determination of an owner's rights.
 - CI tests the application and creates a national-registry artifact and coverage report.
 
-The existing curated and discovered catalogs serve public pathways. Two source-checked
-process publications now also feed the same browsing, retrieval, permanent-page, and
-graph interfaces: passport applications/renewals, and adult California licensing after
-a move with a valid out-of-state license. Their ten official source entries were read
-on October 8, 2026. The remaining processes still need migration. Adding a city to the
-registry does not publish its laws or procedures.
+The existing curated and discovered catalogs serve public pathways. Five source-checked
+process publications feed browsing, retrieval, permanent pages, and graph interfaces:
+U.S. passports, California and Texas adult license transfers, New York plate surrender,
+and San Francisco damaged-public-object reports. The first ten official sources were
+reviewed October 8, 2026; six additional sources were reviewed October 11. Local retrieval
+requires the resolved municipal scope from the geographic registry. The remaining
+processes still need migration. Adding a city does not publish its laws or procedures.
 
 `data/registry/processes.json` is the authored publication input. It includes route
 eligibility, documents, costs, timing, dependencies, and per-step citations. The importer
