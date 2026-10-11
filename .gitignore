@@ -10,3 +10,7 @@ __pycache__/
 .venv/
 data/*.db-shm
 data/*.db-wal
+
+data/govroute-runtime.db*
+data/govroute-runtime.coverage.json
+data/govroute-runtime.manifest.json

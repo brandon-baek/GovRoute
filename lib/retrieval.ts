@@ -80,10 +80,10 @@ function scoreJourney(query: string, journey: Journey): RetrievalMatch {
   return { journey, score, matchedTerms: [...matchedTerms] };
 }
 
-export function retrieveJourneys(query: string, limit = 4, records: Journey[] = journeys, state?: string) {
+export function retrieveJourneys(query: string, limit = 4, records: Journey[] = journeys, state?: string, placeIds: string[] = []) {
   const location = state ?? statesInText(query)[0]?.code;
   return records
-    .filter((journey) => matchesLocation(journey, location))
+    .filter((journey) => matchesLocation(journey, location, undefined, placeIds))
     .map((journey) => scoreJourney(query, journey))
     .filter((match) => match.score > 0)
     .sort((a, b) => b.score - a.score || a.journey.title.localeCompare(b.journey.title))

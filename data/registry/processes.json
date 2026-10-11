@@ -1,0 +1,667 @@
+{
+  "processes": [
+    {
+      "authority_id": "authority:state-department",
+      "topic": "passport",
+      "territory": {
+        "id": "country:US"
+      },
+      "journey": {
+        "id": "journey-passport-apply",
+        "slug": "apply-for-or-renew-a-passport",
+        "title": "Apply for or renew a U.S. passport",
+        "summary": "Choose the renewal or in-person route that fits your passport, prepare the right documents, and submit directly to the State Department.",
+        "category": "Documents and identity",
+        "jurisdiction": "federal",
+        "audience": [
+          "U.S. citizens"
+        ],
+        "aliases": [
+          "new passport",
+          "renew passport",
+          "passport application",
+          "passport expired",
+          "DS-11",
+          "DS-82"
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-08",
+        "eligibility": [
+          "Choose the age-specific application if you cannot renew. Passports issued before age 16 cannot be renewed.",
+          "These submission steps are for applicants in the United States. Use the official embassy or consulate instructions when applying abroad."
+        ],
+        "officialAction": {
+          "url": "https://travel.state.gov/en/passports/apply.html",
+          "label": "Choose my official application route"
+        },
+        "steps": [
+          {
+            "id": "choose",
+            "title": "Choose online, mail, or in-person service",
+            "detail": "Online renewal requires age 25+, a ten-year passport expiring within one year or expired less than five years, no personal-information changes, possession of an undamaged passport not reported lost or stolen, and no travel for at least six weeks. Check the official document-combination rules too. Mail renewal generally requires a ten-year passport issued at age 16+ within the last 15 years, undamaged and never reported lost or stolen, with any required legal name-change evidence. Otherwise use the age-specific in-person application.",
+            "sourceIds": [
+              "passport-online",
+              "passport-mail",
+              "passport-adult",
+              "passport-ages-16-17",
+              "passport-apply"
+            ],
+            "action": {
+              "url": "https://travel.state.gov/en/passports/apply.html",
+              "label": "Compare the official routes"
+            }
+          },
+          {
+            "id": "prepare",
+            "title": "Prepare the documents for your route",
+            "detail": "Mail: complete and sign DS-82, include your previous passport, one compliant photo, and any required name-change evidence. Online: keep your passport and prepare a digital photo. In person: use DS-11 and the age-specific citizenship, ID, photocopy, and photo checklist; sign when the acceptance agent tells you.",
+            "requirements": [
+              "Mail: DS-82, previous passport, photo, and payment.",
+              "Online: passport, digital photo, and payment card.",
+              "In person: DS-11 and the official document checklist for your age."
+            ],
+            "dependsOn": [
+              "choose"
+            ],
+            "sourceIds": [
+              "passport-mail",
+              "passport-online",
+              "passport-adult",
+              "passport-ages-16-17"
+            ],
+            "action": {
+              "url": "https://travel.state.gov/en/passports/apply.html",
+              "label": "Open the document checklist"
+            }
+          },
+          {
+            "id": "fees",
+            "title": "Check the fee and payment method",
+            "detail": "Choose a book, card, or both and confirm the current total for your route. In-person applications also have an acceptance fee.",
+            "fees": [
+              "Adult renewal: $130 book, $30 card, or $160 for both.",
+              "Optional services and in-person acceptance can add fees. Use the current official calculator."
+            ],
+            "dependsOn": [
+              "choose"
+            ],
+            "sourceIds": [
+              "passport-fees"
+            ],
+            "action": {
+              "url": "https://travel.state.gov/en/passports/apply/help/fees.html",
+              "label": "Check fees and accepted payment"
+            }
+          },
+          {
+            "id": "submit",
+            "title": "Submit through your chosen official channel",
+            "detail": "For mail renewal, use the current mailing address for your residence and service speed. Online renewal is submitted personally at opr.travel.state.gov; keep your old passport, which becomes invalid for travel. For DS-11, attend the required acceptance appointment.",
+            "dependsOn": [
+              "prepare",
+              "fees"
+            ],
+            "sourceIds": [
+              "passport-mail",
+              "passport-online",
+              "passport-adult"
+            ],
+            "action": {
+              "url": "https://travel.state.gov/en/passports/apply.html",
+              "label": "Find where to submit"
+            }
+          },
+          {
+            "id": "timing",
+            "title": "Plan for processing and delivery",
+            "detail": "Processing and mailing are separate. Confirm the current service times before booking travel and use the urgent-travel instructions when ordinary service is too slow.",
+            "deadlines": [
+              "Online renewal requires no international travel for at least six weeks after submission.",
+              "For urgent travel, check passport-agency appointment eligibility immediately."
+            ],
+            "sourceIds": [
+              "passport-timing",
+              "passport-online"
+            ],
+            "action": {
+              "url": "https://travel.state.gov/en/passports/apply/help/processing-time.html",
+              "label": "Check current processing times"
+            }
+          }
+        ],
+        "sources": [
+          {
+            "id": "passport-mail",
+            "title": "Renew your passport by mail",
+            "url": "https://travel.state.gov/en/passports/renew-replace/mail.html",
+            "publisher": "U.S. Department of State",
+            "lastChecked": "2026-10-08"
+          },
+          {
+            "id": "passport-online",
+            "title": "Renew your passport online",
+            "url": "https://travel.state.gov/en/passports/renew-replace/online.html",
+            "publisher": "U.S. Department of State",
+            "lastChecked": "2026-10-08"
+          },
+          {
+            "id": "passport-adult",
+            "title": "Apply for an adult passport",
+            "url": "https://travel.state.gov/en/passports/apply/adults.html",
+            "publisher": "U.S. Department of State",
+            "lastChecked": "2026-10-08"
+          },
+          {
+            "id": "passport-ages-16-17",
+            "title": "Passport applications for ages 16–17",
+            "url": "https://travel.state.gov/en/passports/apply/child/16-17-year-old.html",
+            "publisher": "U.S. Department of State",
+            "lastChecked": "2026-10-08"
+          },
+          {
+            "id": "passport-apply",
+            "title": "Apply for a passport",
+            "url": "https://travel.state.gov/en/passports/apply.html",
+            "publisher": "U.S. Department of State",
+            "lastChecked": "2026-10-08"
+          },
+          {
+            "id": "passport-fees",
+            "title": "Passport fees",
+            "url": "https://travel.state.gov/en/passports/apply/help/fees.html",
+            "publisher": "U.S. Department of State",
+            "lastChecked": "2026-10-08"
+          },
+          {
+            "id": "passport-timing",
+            "title": "Passport processing times",
+            "url": "https://travel.state.gov/en/passports/apply/help/processing-time.html",
+            "publisher": "U.S. Department of State",
+            "lastChecked": "2026-10-08"
+          }
+        ]
+      }
+    },
+    {
+      "authority_id": "authority:ca-dmv",
+      "topic": "driver_license",
+      "territory": {
+        "state_code": "CA"
+      },
+      "journey": {
+        "id": "journey-ca-new-resident",
+        "slug": "get-a-california-license-after-moving",
+        "title": "Get a California driver's license after moving",
+        "summary": "For an adult with a valid out-of-state license: prepare your documents, start the application, and finish at a California DMV office.",
+        "category": "Driving and transportation",
+        "jurisdiction": "california",
+        "audience": [
+          "Adult California residents with a valid out-of-state driver's license"
+        ],
+        "aliases": [
+          "California license after moving",
+          "transfer out-of-state license",
+          "transfer license to California",
+          "new California resident license"
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-08",
+        "eligibility": [
+          "This route covers adults with a valid license from another U.S. state.",
+          "Under 18, first-time drivers, foreign licenses, AB 60, and commercial licenses have different requirements; choose the official route for your situation."
+        ],
+        "officialAction": {
+          "url": "https://www.dmv.ca.gov/portal/driver-licenses-identification-cards/driver-licenses-dl/",
+          "label": "Choose my DMV license route"
+        },
+        "steps": [
+          {
+            "id": "route",
+            "title": "Confirm your license route",
+            "detail": "Check California residency and select your license type. Vehicle registration is a separate task if you bring a car.",
+            "sourceIds": [
+              "ca-new-resident",
+              "ca-dl-requirements"
+            ],
+            "action": {
+              "url": "https://www.dmv.ca.gov/portal/driver-licenses-identification-cards/driver-licenses-dl/",
+              "label": "Check my situation"
+            }
+          },
+          {
+            "id": "documents",
+            "title": "Gather identity and residency documents",
+            "detail": "Use the DMV list for your chosen standard or REAL ID license. Prepare original or certified identity evidence, residency documents if you have never had a California DL/ID, and your Social Security number for the official DMV application.",
+            "requirements": [
+              "Acceptable original or certified identity document.",
+              "Acceptable California residency documents when required.",
+              "Social Security number, entered only on the official DMV application."
+            ],
+            "dependsOn": [
+              "route"
+            ],
+            "sourceIds": [
+              "ca-dl-requirements"
+            ],
+            "action": {
+              "url": "https://www.dmv.ca.gov/portal/driver-licenses-identification-cards/driver-licenses-dl/",
+              "label": "Open the DMV document lists"
+            }
+          },
+          {
+            "id": "application",
+            "title": "Start the application online",
+            "detail": "Create or sign in to your DMV account, submit the DL/ID application, and keep its confirmation. The application still needs to be completed at a field office.",
+            "dependsOn": [
+              "documents"
+            ],
+            "sourceIds": [
+              "ca-dl-application"
+            ],
+            "action": {
+              "url": "https://www.dmv.ca.gov/portal/driver-licenses-identification-cards/dl-id-online-app-edl-44/",
+              "label": "Start my official DMV application"
+            }
+          },
+          {
+            "id": "visit",
+            "title": "Finish at a DMV office",
+            "detail": "Bring the required documents and confirmation. Pay the application fee and complete the required identity, photo, thumbprint, vision, and knowledge checks.",
+            "fees": [
+              "The application fee depends on license type; check the fee link in the official DMV requirements."
+            ],
+            "deadlines": [
+              "A submitted online application does not by itself authorize driving. Confirm the residency and licensing rules before driving."
+            ],
+            "dependsOn": [
+              "application"
+            ],
+            "sourceIds": [
+              "ca-dl-requirements",
+              "ca-new-resident"
+            ],
+            "action": {
+              "url": "https://www.dmv.ca.gov/portal/driver-licenses-identification-cards/driver-licenses-dl/",
+              "label": "Check office and test requirements"
+            }
+          }
+        ],
+        "sources": [
+          {
+            "id": "ca-new-resident",
+            "title": "New California resident portal",
+            "url": "https://www.dmv.ca.gov/portal/driver-education-and-safety/special-interest-driver-guides/new-to-california/",
+            "publisher": "California DMV",
+            "lastChecked": "2026-10-08"
+          },
+          {
+            "id": "ca-dl-requirements",
+            "title": "Driver's license requirements",
+            "url": "https://www.dmv.ca.gov/portal/driver-licenses-identification-cards/driver-licenses-dl/",
+            "publisher": "California DMV",
+            "lastChecked": "2026-10-08"
+          },
+          {
+            "id": "ca-dl-application",
+            "title": "Driver's license application",
+            "url": "https://www.dmv.ca.gov/portal/driver-licenses-identification-cards/dl-id-online-app-edl-44/",
+            "publisher": "California DMV",
+            "lastChecked": "2026-10-08"
+          }
+        ]
+      }
+    },
+    {
+      "authority_id": "authority:tx-dps",
+      "topic": "driver_license",
+      "territory": {
+        "state_code": "TX"
+      },
+      "journey": {
+        "id": "journey-tx-license-transfer",
+        "slug": "transfer-an-out-of-state-license-to-texas",
+        "title": "Transfer an out-of-state driver's license to Texas",
+        "summary": "For adults with a valid U.S. state license: complete vehicle prerequisites, prepare documents, and apply at Texas DPS.",
+        "category": "Driving and transportation",
+        "jurisdiction": "state",
+        "state": "TX",
+        "audience": [
+          "Texas residents age 18+ with a valid, unexpired U.S. state driver's license"
+        ],
+        "aliases": [
+          "transfer out-of-state license",
+          "transfer license to Texas",
+          "Texas license after moving",
+          "new Texas resident license"
+        ],
+        "eligibility": [
+          "This route covers adults transferring a valid, unexpired noncommercial license from another U.S. state.",
+          "Minors, learner permits, expired licenses, foreign licenses, and commercial licenses need their own DPS instructions."
+        ],
+        "officialAction": {
+          "url": "https://www.dps.texas.gov/section/driver-license/moving-texas-guide-driver-licenses-and-ids",
+          "label": "Check my Texas transfer route"
+        },
+        "steps": [
+          {
+            "id": "route",
+            "title": "Check your transfer eligibility",
+            "detail": "A qualifying valid license permits driving for up to 90 days after moving. Surrender it when applying; qualifying adults do not take knowledge or skills exams.",
+            "deadlines": [
+              "Up to 90 days after moving with a qualifying valid, unexpired license."
+            ],
+            "sourceIds": [
+              "tx-license-moving"
+            ],
+            "action": {
+              "url": "https://www.dps.texas.gov/section/driver-license/moving-texas-guide-driver-licenses-and-ids",
+              "label": "Check transfer rules"
+            }
+          },
+          {
+            "id": "vehicles",
+            "title": "Complete vehicle prerequisites",
+            "detail": "Register each vehicle you own in Texas before applying. Prepare registration and insurance evidence; if you own no vehicle, provide the required statement.",
+            "dependsOn": [
+              "route"
+            ],
+            "sourceIds": [
+              "tx-license-moving",
+              "tx-license-apply"
+            ],
+            "action": {
+              "url": "https://www.txdmv.gov/motorists/new-to-texas",
+              "label": "Open vehicle registration instructions"
+            }
+          },
+          {
+            "id": "documents",
+            "title": "Gather your application documents",
+            "detail": "Use the DPS document checklist for citizenship or lawful presence, identity, Texas residency, and Social Security number. Enter sensitive information only on official applications.",
+            "requirements": [
+              "Identity and citizenship or lawful-presence evidence.",
+              "Texas residency evidence and Social Security number.",
+              "Your out-of-state license and applicable vehicle documents."
+            ],
+            "dependsOn": [
+              "route"
+            ],
+            "sourceIds": [
+              "tx-license-apply"
+            ],
+            "action": {
+              "url": "https://www.dps.texas.gov/section/driver-license/apply-texas-driver-license",
+              "label": "Open the DPS document checklist"
+            }
+          },
+          {
+            "id": "visit",
+            "title": "Apply at your DPS appointment",
+            "detail": "Schedule through the DPS appointment link. Bring the completed application and documents, surrender your license, pay the applicable fee, and complete photo, signature, thumbprint, and vision checks. Review the temporary license for errors.",
+            "fees": [
+              "Check the current fee through the DPS application page."
+            ],
+            "dependsOn": [
+              "vehicles",
+              "documents"
+            ],
+            "sourceIds": [
+              "tx-license-apply",
+              "tx-license-moving"
+            ],
+            "action": {
+              "url": "https://www.dps.texas.gov/section/driver-license/apply-texas-driver-license",
+              "label": "Schedule and prepare my DPS visit"
+            }
+          }
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-11",
+        "sources": [
+          {
+            "id": "tx-license-moving",
+            "title": "Moving to Texas: driver licenses and IDs",
+            "url": "https://www.dps.texas.gov/section/driver-license/moving-texas-guide-driver-licenses-and-ids",
+            "publisher": "Texas Department of Public Safety",
+            "lastChecked": "2026-10-11"
+          },
+          {
+            "id": "tx-license-apply",
+            "title": "Apply for a Texas driver license",
+            "url": "https://www.dps.texas.gov/section/driver-license/apply-texas-driver-license",
+            "publisher": "Texas Department of Public Safety",
+            "lastChecked": "2026-10-11"
+          }
+        ]
+      }
+    },
+    {
+      "authority_id": "authority:ny-dmv",
+      "topic": "vehicle_registration",
+      "territory": {
+        "state_code": "NY"
+      },
+      "journey": {
+        "id": "journey-ny-plate-surrender",
+        "slug": "surrender-new-york-plates-before-changing-insurance",
+        "title": "Surrender New York vehicle plates before changing insurance",
+        "summary": "Return New York plates and registration before canceling New York liability coverage when registering your car in another state.",
+        "category": "Driving and transportation",
+        "jurisdiction": "state",
+        "state": "NY",
+        "audience": [
+          "Owners of New York-registered passenger cars moving their registration to another state"
+        ],
+        "aliases": [
+          "surrender NY plates",
+          "surrender New York plates",
+          "return NY plates",
+          "cancel New York insurance",
+          "canceling insurance",
+          "plate surrender"
+        ],
+        "eligibility": [
+          "This route covers passenger cars with New York plates available to return.",
+          "Motorcycles, trailers, and lost or stolen plates have separate instructions."
+        ],
+        "officialAction": {
+          "url": "https://dmv.ny.gov/registration/surrender-return-or-turn-in-your-vehicle-plates-and-registration",
+          "label": "Open official plate surrender instructions"
+        },
+        "steps": [
+          {
+            "id": "insurance",
+            "title": "Keep New York coverage until surrender",
+            "detail": "Out-of-state insurance does not cover a New York registration for DMV purposes. Surrender New York plates and registration before ending New York liability coverage.",
+            "sourceIds": [
+              "ny-moving",
+              "ny-plate-surrender"
+            ],
+            "action": {
+              "url": "https://dmv.ny.gov/more-info/moving-to-or-from-new-york-state",
+              "label": "Check the insurance sequence"
+            }
+          },
+          {
+            "id": "prepare",
+            "title": "Prepare the plates and PD-7",
+            "detail": "Complete PD-7 for each plate set. Remove frames and fasteners and destroy windshield registration and inspection stickers. For mail returns, update your registration address and arrange mail forwarding.",
+            "requirements": [
+              "Plates without frames or fasteners.",
+              "Completed PD-7 for each set."
+            ],
+            "dependsOn": [
+              "insurance"
+            ],
+            "sourceIds": [
+              "ny-plate-surrender"
+            ],
+            "action": {
+              "url": "https://dmv.ny.gov/registration/surrender-return-or-turn-in-your-vehicle-plates-and-registration",
+              "label": "Find PD-7 and preparation instructions"
+            }
+          },
+          {
+            "id": "return",
+            "title": "Return the plates and keep the receipt",
+            "detail": "Mail the plates and PD-7 in an envelope to the current official address, or bring them to a DMV office. Retain the FS-6T receipt. The mail postmark counts as the surrender date.",
+            "fees": [
+              "County motor vehicle offices charge $1 to process surrender."
+            ],
+            "deadlines": [
+              "Allow 21 days for a mailed receipt; contact DMV if it does not arrive."
+            ],
+            "dependsOn": [
+              "prepare"
+            ],
+            "sourceIds": [
+              "ny-plate-surrender"
+            ],
+            "action": {
+              "url": "https://dmv.ny.gov/registration/surrender-return-or-turn-in-your-vehicle-plates-and-registration",
+              "label": "Choose mail or office surrender"
+            }
+          },
+          {
+            "id": "change",
+            "title": "Coordinate registration and insurance",
+            "detail": "After surrender, confirm registration and insurance requirements in the destination state. Keep evidence of surrender and new coverage.",
+            "dependsOn": [
+              "return"
+            ],
+            "sourceIds": [
+              "ny-moving"
+            ],
+            "action": {
+              "url": "https://dmv.ny.gov/more-info/moving-to-or-from-new-york-state",
+              "label": "Check the next-state handoff"
+            }
+          }
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-11",
+        "sources": [
+          {
+            "id": "ny-moving",
+            "title": "Moving to or from New York State",
+            "url": "https://dmv.ny.gov/more-info/moving-to-or-from-new-york-state",
+            "publisher": "New York State Department of Motor Vehicles",
+            "lastChecked": "2026-10-11"
+          },
+          {
+            "id": "ny-plate-surrender",
+            "title": "Surrender your vehicle plates and registration",
+            "url": "https://dmv.ny.gov/registration/surrender-return-or-turn-in-your-vehicle-plates-and-registration",
+            "publisher": "New York State Department of Motor Vehicles",
+            "lastChecked": "2026-10-11"
+          }
+        ]
+      }
+    },
+    {
+      "authority_id": "authority:sf311",
+      "topic": "public_property_repair",
+      "territory": {
+        "geoid": "0667000",
+        "kind": "municipality"
+      },
+      "journey": {
+        "id": "journey-sf-damaged-public-property",
+        "slug": "report-damaged-public-property-in-san-francisco",
+        "title": "Report damaged public property in San Francisco",
+        "summary": "Report a damaged sidewalk bench, bike rack, parking meter, transit shelter, or another listed public object to San Francisco 311 and track the request.",
+        "category": "Local services",
+        "jurisdiction": "local",
+        "state": "CA",
+        "locality": "San Francisco",
+        "audience": [
+          "People reporting a listed damaged public object in San Francisco"
+        ],
+        "aliases": [
+          "damaged public property",
+          "broken bench",
+          "damaged bench",
+          "broken bike rack",
+          "broken parking meter",
+          "damaged transit shelter"
+        ],
+        "eligibility": [
+          "This route covers the public objects listed by SF311 in San Francisco.",
+          "For damaged traffic signals, call 311; parking and traffic signs use a separate report."
+        ],
+        "officialAction": {
+          "url": "https://www.sf.gov/report-damaged-public-property",
+          "label": "Open the SF311 reporting page"
+        },
+        "steps": [
+          {
+            "id": "prepare",
+            "title": "Describe the object and location",
+            "detail": "Collect the location, object type, any object identification number, and damage description. Add a photo if available.",
+            "requirements": [
+              "Location and object type.",
+              "Object ID, if present, and damage description.",
+              "Photo, if available."
+            ],
+            "sourceIds": [
+              "sf-damaged-public-property"
+            ],
+            "action": {
+              "url": "https://www.sf.gov/report-damaged-public-property",
+              "label": "Check what I can report"
+            }
+          },
+          {
+            "id": "report",
+            "title": "Submit through SF311",
+            "detail": "Use the Report link on the official page. Alternatively, call 311 within San Francisco or 415-701-2311 from outside the city; TTY users can call 711.",
+            "dependsOn": [
+              "prepare"
+            ],
+            "sourceIds": [
+              "sf-damaged-public-property",
+              "sf311-information"
+            ],
+            "action": {
+              "url": "https://www.sf.gov/report-damaged-public-property",
+              "label": "Start my official report"
+            }
+          },
+          {
+            "id": "track",
+            "title": "Keep your tracking number",
+            "detail": "Use the 311 tracking number to follow the case online or in the SF311 app. Response times depend on the object and damage; inspection and repair may differ.",
+            "dependsOn": [
+              "report"
+            ],
+            "sourceIds": [
+              "sf-damaged-public-property"
+            ],
+            "action": {
+              "url": "https://www.sf.gov/report-damaged-public-property",
+              "label": "Find case tracking instructions"
+            }
+          }
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-11",
+        "sources": [
+          {
+            "id": "sf-damaged-public-property",
+            "title": "Report damaged public property",
+            "url": "https://www.sf.gov/report-damaged-public-property",
+            "publisher": "San Francisco 311",
+            "lastChecked": "2026-10-11"
+          },
+          {
+            "id": "sf311-information",
+            "title": "Get information from 311",
+            "url": "https://www.sf.gov/get-information-311",
+            "publisher": "San Francisco 311",
+            "lastChecked": "2026-10-11"
+          }
+        ]
+      }
+    }
+  ]
+}

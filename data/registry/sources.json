@@ -1,0 +1,239 @@
+{
+  "authorities": [
+    {
+      "id": "authority:state-department",
+      "name": "U.S. Department of State",
+      "level": "federal",
+      "evidence_url": "https://travel.state.gov/en/passports.html"
+    },
+    {
+      "id": "authority:ca-dmv",
+      "name": "California Department of Motor Vehicles",
+      "level": "state",
+      "evidence_url": "https://www.dmv.ca.gov/portal/driver-licenses-identification-cards/driver-licenses-dl/"
+    },
+    {
+      "id": "authority:tx-dps",
+      "name": "Texas Department of Public Safety",
+      "level": "state",
+      "evidence_url": "https://www.dps.texas.gov/section/driver-license/moving-texas-guide-driver-licenses-and-ids"
+    },
+    {
+      "id": "authority:ny-dmv",
+      "name": "New York State Department of Motor Vehicles",
+      "level": "state",
+      "evidence_url": "https://dmv.ny.gov/more-info/moving-to-or-from-new-york-state"
+    },
+    {
+      "id": "authority:sf311",
+      "name": "San Francisco 311",
+      "level": "municipal",
+      "evidence_url": "https://www.sf.gov/report-damaged-public-property"
+    }
+  ],
+  "scopes": [
+    {
+      "authority_id": "authority:state-department",
+      "territory_id": "country:US",
+      "topic": "passport",
+      "role": "service_provider",
+      "evidence_url": "https://travel.state.gov/en/passports/renew-replace/mail.html",
+      "reviewed_at": "2026-10-08"
+    },
+    {
+      "authority_id": "authority:ca-dmv",
+      "state_code": "CA",
+      "topic": "driver_license",
+      "role": "service_provider",
+      "evidence_url": "https://www.dmv.ca.gov/portal/driver-education-and-safety/special-interest-driver-guides/new-to-california/",
+      "reviewed_at": "2026-10-08"
+    },
+    {
+      "authority_id": "authority:tx-dps",
+      "state_code": "TX",
+      "topic": "driver_license",
+      "role": "service_provider",
+      "evidence_url": "https://www.dps.texas.gov/section/driver-license/moving-texas-guide-driver-licenses-and-ids",
+      "reviewed_at": "2026-10-11"
+    },
+    {
+      "authority_id": "authority:ny-dmv",
+      "state_code": "NY",
+      "topic": "vehicle_registration",
+      "role": "service_provider",
+      "evidence_url": "https://dmv.ny.gov/more-info/moving-to-or-from-new-york-state",
+      "reviewed_at": "2026-10-11"
+    },
+    {
+      "authority_id": "authority:sf311",
+      "geoid": "0667000",
+      "kind": "municipality",
+      "topic": "public_property_repair",
+      "role": "service_provider",
+      "evidence_url": "https://www.sf.gov/report-damaged-public-property",
+      "reviewed_at": "2026-10-11"
+    }
+  ],
+  "sources": [
+    {
+      "id": "passport-mail",
+      "authority_id": "authority:state-department",
+      "topic": "passport",
+      "title": "Renew your passport by mail",
+      "url": "https://travel.state.gov/en/passports/renew-replace/mail.html",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-08",
+      "freshness_days": 30
+    },
+    {
+      "id": "passport-online",
+      "authority_id": "authority:state-department",
+      "topic": "passport",
+      "title": "Renew your passport online",
+      "url": "https://travel.state.gov/en/passports/renew-replace/online.html",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-08",
+      "freshness_days": 30
+    },
+    {
+      "id": "passport-adult",
+      "authority_id": "authority:state-department",
+      "topic": "passport",
+      "title": "Apply for an adult passport",
+      "url": "https://travel.state.gov/en/passports/apply/adults.html",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-08",
+      "freshness_days": 30
+    },
+    {
+      "id": "passport-ages-16-17",
+      "authority_id": "authority:state-department",
+      "topic": "passport",
+      "title": "Passport applications for ages 16–17",
+      "url": "https://travel.state.gov/en/passports/apply/child/16-17-year-old.html",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-08",
+      "freshness_days": 30
+    },
+    {
+      "id": "passport-apply",
+      "authority_id": "authority:state-department",
+      "topic": "passport",
+      "title": "Apply for a passport",
+      "url": "https://travel.state.gov/en/passports/apply.html",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-08",
+      "freshness_days": 30
+    },
+    {
+      "id": "passport-fees",
+      "authority_id": "authority:state-department",
+      "topic": "passport",
+      "title": "Passport fees",
+      "url": "https://travel.state.gov/en/passports/apply/help/fees.html",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-08",
+      "freshness_days": 30
+    },
+    {
+      "id": "passport-timing",
+      "authority_id": "authority:state-department",
+      "topic": "passport",
+      "title": "Passport processing times",
+      "url": "https://travel.state.gov/en/passports/apply/help/processing-time.html",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-08",
+      "freshness_days": 30
+    },
+    {
+      "id": "ca-new-resident",
+      "authority_id": "authority:ca-dmv",
+      "topic": "driver_license",
+      "title": "New California resident portal",
+      "url": "https://www.dmv.ca.gov/portal/driver-education-and-safety/special-interest-driver-guides/new-to-california/",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-08",
+      "freshness_days": 30
+    },
+    {
+      "id": "ca-dl-requirements",
+      "authority_id": "authority:ca-dmv",
+      "topic": "driver_license",
+      "title": "Driver's license requirements",
+      "url": "https://www.dmv.ca.gov/portal/driver-licenses-identification-cards/driver-licenses-dl/",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-08",
+      "freshness_days": 30
+    },
+    {
+      "id": "ca-dl-application",
+      "authority_id": "authority:ca-dmv",
+      "topic": "driver_license",
+      "title": "Driver's license application",
+      "url": "https://www.dmv.ca.gov/portal/driver-licenses-identification-cards/dl-id-online-app-edl-44/",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-08",
+      "freshness_days": 30
+    },
+    {
+      "id": "tx-license-moving",
+      "title": "Moving to Texas: driver licenses and IDs",
+      "url": "https://www.dps.texas.gov/section/driver-license/moving-texas-guide-driver-licenses-and-ids",
+      "authority_id": "authority:tx-dps",
+      "topic": "driver_license",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-11",
+      "freshness_days": 30
+    },
+    {
+      "id": "tx-license-apply",
+      "title": "Apply for a Texas driver license",
+      "url": "https://www.dps.texas.gov/section/driver-license/apply-texas-driver-license",
+      "authority_id": "authority:tx-dps",
+      "topic": "driver_license",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-11",
+      "freshness_days": 30
+    },
+    {
+      "id": "ny-moving",
+      "title": "Moving to or from New York State",
+      "url": "https://dmv.ny.gov/more-info/moving-to-or-from-new-york-state",
+      "authority_id": "authority:ny-dmv",
+      "topic": "vehicle_registration",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-11",
+      "freshness_days": 30
+    },
+    {
+      "id": "ny-plate-surrender",
+      "title": "Surrender your vehicle plates and registration",
+      "url": "https://dmv.ny.gov/registration/surrender-return-or-turn-in-your-vehicle-plates-and-registration",
+      "authority_id": "authority:ny-dmv",
+      "topic": "vehicle_registration",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-11",
+      "freshness_days": 30
+    },
+    {
+      "id": "sf-damaged-public-property",
+      "title": "Report damaged public property",
+      "url": "https://www.sf.gov/report-damaged-public-property",
+      "authority_id": "authority:sf311",
+      "topic": "public_property_repair",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-11",
+      "freshness_days": 30
+    },
+    {
+      "id": "sf311-information",
+      "title": "Get information from 311",
+      "url": "https://www.sf.gov/get-information-311",
+      "authority_id": "authority:sf311",
+      "topic": "public_property_repair",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-11",
+      "freshness_days": 30
+    }
+  ]
+}

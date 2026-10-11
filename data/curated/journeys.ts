@@ -1,8 +1,9 @@
 import type { Journey } from "@/lib/schema";
+import { mergeProcessJourneys } from "@/lib/process-catalog";
 
 const checked = "2026-09-03";
 
-export const journeys: Journey[] = [
+const legacyJourneys: Journey[] = [
   {
     id: "journey-passport-lost",
     slug: "replace-a-lost-or-stolen-passport",
@@ -520,3 +521,5 @@ export const journeys: Journey[] = [
     sources: [{ id: "benefit-finder", title: "Government benefits finder", url: "https://www.usa.gov/benefit-finder", publisher: "USA.gov", lastChecked: checked }]
   }
 ];
+
+export const journeys = mergeProcessJourneys(legacyJourneys);

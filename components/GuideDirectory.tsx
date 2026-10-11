@@ -8,17 +8,17 @@ import { jurisdictionLabel, states } from "@/lib/jurisdictions";
 import styles from "./GuideDirectory.module.css";
 
 type Entry = Pick<Journey, "id" | "slug" | "title" | "summary" | "category"> & { jurisdiction: string; state?: string; locality?: string; publisher?: string };
-export function GuideDirectory({ guides, discovered }: { guides: Journey[]; discovered: DiscoveredGuide[] }) {
-  const [active, setActive] = useState<GuideGroupId>("travel-moving");
+export function GuideDirectory({ guides, discovered, initialGroup = "identity-civic" }: { guides: Journey[]; discovered: DiscoveredGuide[]; initialGroup?: GuideGroupId }) {
+  const [active, setActive] = useState<GuideGroupId>(initialGroup);
   const [state, setState] = useState("");
   const [locality, setLocality] = useState("");
   const [query, setQuery] = useState("");
-  const [includeFederal, setIncludeFederal] = useState(false);
+  const [includeFederal, setIncludeFederal] = useState(true);
   const entries = useMemo<Entry[]>(() => [...guides, ...discovered], [guides, discovered]);
   const filtered = entries.filter((entry) => {
-    const code = entry.state ?? (entry.jurisdiction === "california" ? "CA" : "");
+    const code = entry.state ?? (["california", "federal-and-state"].includes(entry.jurisdiction) ? "CA" : "");
     if (entry.jurisdiction === "federal") { if (!includeFederal) return false; }
-    else if (entry.jurisdiction !== "california" && !["state", "local"].includes(entry.jurisdiction)) return false;
+    else if (entry.jurisdiction !== "california" && !["state", "local", "federal-and-state"].includes(entry.jurisdiction)) return false;
     if (state && entry.jurisdiction !== "federal" && code !== state) return false;
     if (locality.trim() && entry.locality && !entry.locality.toLowerCase().includes(locality.trim().toLowerCase())) return false;
     return `${entry.title} ${entry.summary} ${jurisdictionLabel(entry)}`.toLowerCase().includes(query.trim().toLowerCase());
@@ -26,7 +26,7 @@ export function GuideDirectory({ guides, discovered }: { guides: Journey[]; disc
   const group = GUIDE_GROUPS.find((item) => item.id === active)!;
   const shown = filtered.filter((entry) => guideGroupForCategory(entry.category) === active).sort((a,b) => a.title.localeCompare(b.title) || jurisdictionLabel(a).localeCompare(jurisdictionLabel(b)));
   return <section className={styles.directory} aria-labelledby="guide-directory-heading">
-    <header className={styles.header}><p className={styles.kicker}>Browse your jurisdiction</p><h2 id="guide-directory-heading">Find a local starting point.</h2><p>Reviewed routes and automatically discovered official pages are labeled separately. Similar tasks in different places have different rules.</p></header>
+    <header className={styles.header}><p className={styles.kicker}>Browse by task</p><h2 id="guide-directory-heading">Find your pathway.</h2><p>Reviewed routes and discovered official starting points are labeled separately. Add your location to narrow the results.</p></header>
     <div className="directory-filters">
       <label>State or territory<select value={state} onChange={(event) => setState(event.target.value)}><option value="">All locations</option>{states.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}</select></label>
       <label>City or county<input value={locality} onChange={(event) => setLocality(event.target.value)} placeholder="Filter local jurisdictions" /></label>

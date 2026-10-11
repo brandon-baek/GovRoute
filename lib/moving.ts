@@ -1,14 +1,15 @@
 import { stateByCode } from "@/lib/jurisdictions";
 
 export type MoveStep = { id: string; title: string; detail: string; jurisdiction: string; url: string; sourceLabel: string; deadline?: string; checkedAt?: string; dependsOn?: string[] };
-export type MovePlan = { title: string; detailed: boolean; steps: MoveStep[] };
-const checkedAt = "2026-09-30";
+export type MovePlan = { title: string; detailed: boolean; reviewDue: boolean; reviewedAt: string; steps: MoveStep[] };
+const checkedAt = "2026-10-09";
 const ca = "https://www.dmv.ca.gov/portal/driver-education-and-safety/special-interest-driver-guides/new-to-california/";
 const tx = "https://www.txdmv.gov/motorists/new-to-texas";
 const txLicense = "https://www.dps.texas.gov/section/driver-license/moving-texas-guide-driver-licenses-and-ids";
 const ny = "https://dmv.ny.gov/more-info/moving-to-or-from-new-york-state";
 
-export function buildMovePlan(from: string, to: string, vehicle: boolean): MovePlan | null {
+export function buildMovePlan(from: string, to: string, vehicle: boolean, now = new Date()): MovePlan | null {
+  from=from.toUpperCase(); to=to.toUpperCase();
   const origin = stateByCode(from);
   const destination = stateByCode(to);
   if (!origin || !destination || from === to) return null;
@@ -34,9 +35,9 @@ export function buildMovePlan(from: string, to: string, vehicle: boolean): MoveP
       deadline: to === "TX" ? "Within 30 days of moving to Texas" : to === "CA" ? "Within 20 days of becoming a resident or bringing the vehicle into California" : to === "NY" ? "Within 30 days of becoming a resident" : undefined, checkedAt: detailed ? checkedAt : undefined });
   }
   steps.push({ id: "license", title: `Check your driver license transfer in ${destination.name}`,
-    detail: to === "TX" ? "Driver licenses are issued by Texas DPS, separately from TxDMV. Review DPS's transfer instructions and required documents; a valid out-of-state license must be surrendered." : to === "NY" ? "Review exchange eligibility and prepare the required documents. Exchange is in person and includes a vision test, surrendering your out-of-state license, and a fee." : to === "CA" ? "If you become a California resident and drive, apply for a California driver license using the DMV's new-resident route. Check current documents, tests, and timing." : "Find the driver licensing agency and its new-resident transfer instructions. Do not assume the vehicle-registration office also issues driver licenses. Confirm deadlines and appointment requirements on the official site.",
+    detail: to === "TX" ? "Driver licenses are issued by Texas DPS, separately from TxDMV. Review DPS’s transfer instructions and required documents; a valid out-of-state license must be surrendered. DPS requires vehicle owners to handle Texas registration before the license application; check the registration-evidence rules and any exemptions." : to === "NY" ? "Review exchange eligibility and prepare the required documents. Exchange is in person and includes a vision test, surrendering your out-of-state license, and a fee." : to === "CA" ? "If you become a California resident and drive, apply for a California driver license using the DMV's new-resident route. Check current documents, tests, and timing." : "Find the driver licensing agency and its new-resident transfer instructions. Do not assume the vehicle-registration office also issues driver licenses. Confirm deadlines and appointment requirements on the official site.",
     jurisdiction: destination.name, url: to === "TX" ? txLicense : to === "NY" ? "https://dmv.ny.gov/driver-license/exchange-out-of-state-driver-license" : source,
-    sourceLabel: to === "TX" ? "Texas DPS — license transfer" : "Official license guidance", dependsOn: ["residency"],
+    sourceLabel: to === "TX" ? "Texas DPS — license transfer" : "Official license guidance", dependsOn: to === "TX" && vehicle ? ["residency", "registration"] : ["residency"],
     deadline: to === "TX" ? "Within 90 days of moving to Texas" : to === "NY" ? "Within 30 days of becoming a resident" : undefined, checkedAt: detailed ? checkedAt : undefined });
-  return { title: `${origin.name} to ${destination.name}`, detailed, steps };
+  return { title: `${origin.name} to ${destination.name}`, detailed, reviewDue: now.getTime()-Date.parse(checkedAt+"T00:00:00Z")>30*86400000, reviewedAt:checkedAt, steps };
 }

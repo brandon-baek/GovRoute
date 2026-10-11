@@ -1,0 +1,177 @@
+name: Govroute foundation
+
+on:
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'pipeline/**'
+      - 'database/registry/**'
+      - 'data/registry/**'
+      - 'data/curated/**'
+      - 'scripts/check-registry*'
+      - 'scripts/prepare-registry.mjs'
+      - 'package.json'
+      - 'next.config.ts'
+      - 'docs/**'
+      - '.github/workflows/govroute-foundation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: govroute-foundation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m unittest pipeline.test_locations pipeline.test_processes pipeline.test_national_backend -v
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build
+        env:
+          VERCEL: '1'
+
+  national-registry:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore the last verified directory crawl for rotating expansion
+        run: node scripts/prepare-registry.mjs
+      - name: Import complete Census layers and GNIS populated places and names
+        run: python -m pipeline.locations --output data/govroute-locations.db
+      - name: Import the complete official government registration inventory
+        run: python -m pipeline.government_directory --database data/govroute-locations.db
+      - name: Crawl a state-balanced batch of official local websites
+        run: python -m pipeline.local_sources --database data/govroute-locations.db --sites 220
+      - name: Attempt the separately measured procedure-source index
+        id: sources
+        continue-on-error: true
+        run: python -m pipeline.legal_sources --database data/govroute-locations.db
+      - name: Report source indexing gaps explicitly
+        if: steps.sources.outcome == 'failure'
+        run: echo '::warning::Some procedure pages could not be indexed. The coverage report records these failures; no missing content is published as indexed.'
+      - name: Build a bounded, integrity-checked national serving projection
+        run: python -m pipeline.compact_registry
+      - name: Preserve full archive, serving release, and measured coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: govroute-national-registry
+          path: |
+            data/govroute-locations.db.gz
+            data/govroute-locations.coverage.json
+            data/govroute-runtime.db.gz
+            data/govroute-runtime.manifest.json
+            data/govroute-runtime.coverage.json
+          retention-days: 90
+
+  registry-runtime:
+    needs: national-registry
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/download-artifact@v4
+        with:
+          name: govroute-national-registry
+          path: data
+      - name: Materialize archived databases for runtime checks
+        run: |
+          python - <<'PY'
+          import gzip, shutil
+          from pathlib import Path
+          for name in ("govroute-locations", "govroute-runtime"):
+              with gzip.open(Path("data")/(name+".db.gz"),"rb") as source,open(Path("data")/(name+".db"),"wb") as destination:
+                  shutil.copyfileobj(source,destination)
+          PY
+      - run: npm ci
+      - name: Check actual national registry search and jurisdiction semantics
+        run: npx tsx scripts/check-registry.ts
+      - name: Build with the actual national serving projection
+        run: npm run build
+        env:
+          VERCEL: '1'
+          GOVROUTE_PREPARE_REGISTRY_SKIP: 'true'
+      - name: Verify compressed serving inclusion, archive exclusion, and function size budgets
+        run: python scripts/check-registry-traces.py
+      - name: Exercise realistic user flows over production HTTP APIs
+        run: npx tsx scripts/check-registry-http.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: govroute-user-scenarios
+          path: data/govroute-scenario-results.json
+          retention-days: 90
+
+  publish-serving-release:
+    needs: [validate, registry-runtime]
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: govroute-national-registry
+          path: data
+      - name: Publish the verified public dataset release and pin the review branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+        run: |
+          REGISTRY_TAG="registry-$EXPECTED_HEAD"
+          if gh release view "$REGISTRY_TAG" >/dev/null 2>&1; then
+            gh release download "$REGISTRY_TAG" --pattern govroute-runtime.manifest.json --dir data --clobber
+          else
+            gh release create "$REGISTRY_TAG" data/govroute-runtime.db.gz data/govroute-locations.db.gz data/govroute-runtime.manifest.json data/govroute-runtime.coverage.json --target "$EXPECTED_HEAD" --prerelease --title "Govroute national backend dataset" --notes-file docs/REGISTRY_RELEASE.md
+          fi
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          manifest=json.loads(Path("data/govroute-runtime.manifest.json").read_text())
+          manifest["url"]="https://github.com/brandon-baek/Project-Gov/releases/download/registry-"+os.environ["EXPECTED_HEAD"]+"/govroute-runtime.db.gz"
+          Path("data/registry/runtime-release.json").write_text(json.dumps(manifest,indent=2)+"\n")
+          PY
+          git fetch origin "$BRANCH_NAME"
+          CURRENT_HEAD=$(git rev-parse FETCH_HEAD)
+          if [ "$CURRENT_HEAD" != "$EXPECTED_HEAD" ]; then
+            echo 'Branch advanced; retaining the verified release without changing its newer code.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/registry/runtime-release.json
+          git commit -m 'data: pin verified national backend serving release'
+          git push origin HEAD:"$BRANCH_NAME"

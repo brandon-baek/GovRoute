@@ -128,3 +128,7 @@ The default public guidance and moving planner make no LLM calls, even if an API
 ## Jurisdiction and publication
 
 The default guide directory focuses on state/local services. Generated guides recover state and locality from official directory records; unknown locations are never treated as a selected state's guide. Publication consolidates equivalent task titles on the same responsible host and scope, removes tracking URL variants, and preserves aliases for consolidated permanent pages. Reviewed-source URLs take precedence over discovered starting points. Similar tasks in different towns remain separate and display their location. The scheduled crawler prioritizes state/local sources through `--source local`; federal ingestion remains available manually.
+
+## Govroute pathway and location foundation
+
+The task-first interface and national location/source registry are documented in [docs/GOVROUTE_FOUNDATION.md](docs/GOVROUTE_FOUNDATION.md). The location registry is separate from the existing curated/discovered pathway database; geographic coverage does not imply complete procedural coverage.

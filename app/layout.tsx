@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import "./hub.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: { default: "GovGuide", template: "%s · GovGuide" },
-  description: "Find state and local government services and build cross-state moving checklists with official sources.",
+  title: { default: "govroute", template: "%s · govroute" },
+  description: "Understand government pathways: find the right process, prepare your documents, and take the next step with official sources.",
   metadataBase: new URL(siteUrl),
   robots: { index: true, follow: true }
 };

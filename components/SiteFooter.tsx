@@ -5,7 +5,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="shell site-footer__inner">
         <div>
-          <strong>GovGuide</strong>
+          <strong>govroute</strong>
           <p>Clear routes through public services.</p>
         </div>
         <div className="footer-links">

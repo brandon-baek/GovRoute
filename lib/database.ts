@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type { Journey } from "@/lib/schema";
 import { journeys as bundledJourneys } from "@/data/curated/journeys";
+import { mergeProcessJourneys } from "@/lib/process-catalog";
 
 let singleton: Database.Database | null = null;
 
@@ -104,7 +105,7 @@ export function getIndexedAgencyTotals(database = getDatabase()) {
 export function getStoredJourneys(): { journeys: Journey[]; storage: "sqlite" | "bundled-fallback" } {
   try {
     const records = loadVerifiedJourneys();
-    if (records.length > 0) return { journeys: records, storage: "sqlite" };
+    if (records.length > 0) return { journeys: mergeProcessJourneys(records), storage: "sqlite" };
   } catch {
     // The bundled graph keeps the read path available during first-run setup.
   }

@@ -4,15 +4,13 @@ export function SiteHeader() {
   return (
       <header className="site-header">
         <div className="shell site-header__inner">
-          <Link className="wordmark" href="/" aria-label="GovGuide home">
+          <Link className="wordmark" href="/" aria-label="govroute home">
             <span className="wordmark__mark" aria-hidden="true">G</span>
-            GovGuide
+            govroute
           </Link>
           <nav aria-label="Main navigation">
-            <Link href="/guides">Local guides</Link>
-            <Link href="/moving">Moving states</Link>
-            <Link href="/graph">Knowledge graph</Link>
-            <Link href="/data">Data</Link>
+            <Link href="/guides">Pathways</Link>
+            <Link href="/data">Sources & coverage</Link>
             <Link href="/about">About</Link>
           </nav>
           <Link className="header-ask" href="/#ask"><span aria-hidden="true" /> Get guidance</Link>
