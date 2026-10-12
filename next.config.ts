@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
     "/api/local-resources": registryFiles,
     "/api/processes": registryFiles,
     "/api/location/resolve": registryFiles,
+    "/api/location/context": registryFiles,
+    "/api/coverage": registryFiles,
     "/api/catalog": ["./data/govguide.db"],
     "/graph": ["./data/govguide.db"],
     "/data": registryFiles

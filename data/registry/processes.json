@@ -153,7 +153,7 @@
           },
           {
             "id": "passport-ages-16-17",
-            "title": "Passport applications for ages 16–17",
+            "title": "Passport applications for ages 16\u201317",
             "url": "https://travel.state.gov/en/passports/apply/child/16-17-year-old.html",
             "publisher": "U.S. Department of State",
             "lastChecked": "2026-10-08"
@@ -661,6 +661,953 @@
             "lastChecked": "2026-10-11"
           }
         ]
+      }
+    },
+    {
+      "authority_id": "authority:la-public-works",
+      "topic": "building_permit",
+      "territory": {
+        "geoid": "06037",
+        "kind": "county"
+      },
+      "journey": {
+        "id": "journey-la-county-building-permit",
+        "slug": "la-county-building-permit",
+        "title": "Apply for a building permit in unincorporated Los Angeles County",
+        "summary": "Confirm your project office, prepare plans, and follow the County permit process.",
+        "category": "Building and permits",
+        "jurisdiction": "local",
+        "audience": [
+          "Confirm your project office, prepare plans, and follow the County permit process."
+        ],
+        "aliases": [
+          "building permit",
+          "construction permit",
+          "permit for a remodel"
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-12",
+        "coverageLevel": "procedure",
+        "steps": [
+          {
+            "id": "step-1",
+            "title": "Confirm the office",
+            "detail": "Enter the project address or parcel number in the County Service Locator. Use the returned office; mailing names alone do not establish jurisdiction.",
+            "sourceIds": [
+              "la-county-building-permit"
+            ],
+            "action": {
+              "label": "Find the project office",
+              "url": "https://pw.lacounty.gov/general/servicelocator/"
+            }
+          },
+          {
+            "id": "step-2",
+            "title": "Check project requirements",
+            "detail": "Ask that office which permit type, plans, and approvals your project requires.",
+            "sourceIds": [
+              "la-county-building-permit"
+            ],
+            "requirements": [
+              "Project location and description.",
+              "Plans and attachments required by the office."
+            ],
+            "dependsOn": [
+              "step-1"
+            ]
+          },
+          {
+            "id": "step-3",
+            "title": "Submit through EPIC-LA",
+            "detail": "Create or sign into EPIC-LA. Choose the permit, enter location and contacts, attach required plans, and submit.",
+            "sourceIds": [
+              "la-county-building-permit"
+            ],
+            "action": {
+              "label": "Open EPIC-LA",
+              "url": "https://epicla.lacounty.gov/"
+            },
+            "dependsOn": [
+              "step-2"
+            ]
+          },
+          {
+            "id": "step-4",
+            "title": "Complete review and payment",
+            "detail": "Pay the invoiced review fees and respond to corrections. Complete the required issuance forms.",
+            "sourceIds": [
+              "la-county-building-permit"
+            ],
+            "fees": [
+              "Project-specific fees are invoiced by the County."
+            ],
+            "dependsOn": [
+              "step-3"
+            ]
+          },
+          {
+            "id": "step-5",
+            "title": "Wait for issuance and arrange inspections",
+            "detail": "Begin permitted work after issuance. Request inspections through EPIC-LA.",
+            "sourceIds": [
+              "la-county-building-permit"
+            ],
+            "caution": "Application submission is not permission to start construction.",
+            "dependsOn": [
+              "step-4"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "id": "la-county-building-permit",
+            "title": "Apply for a building permit in unincorporated Los Angeles County",
+            "url": "https://permits.lacounty.gov/permits/building-and-safety/",
+            "publisher": "Los Angeles County Public Works",
+            "lastChecked": "2026-10-12"
+          }
+        ],
+        "officialAction": {
+          "label": "Open official instructions",
+          "url": "https://permits.lacounty.gov/permits/building-and-safety/"
+        },
+        "state": "CA",
+        "locality": "Los Angeles County",
+        "serviceArea": "unincorporated",
+        "scopeNote": "For unincorporated County territory. The project office must confirm parcel jurisdiction, permit type, and any additional approvals."
+      }
+    },
+    {
+      "authority_id": "authority:la-planning",
+      "topic": "property",
+      "territory": {
+        "geoid": "06037",
+        "kind": "county"
+      },
+      "journey": {
+        "id": "journey-la-county-zoning-lookup",
+        "slug": "la-county-zoning-lookup",
+        "title": "Find zoning in unincorporated Los Angeles County",
+        "summary": "Locate zoning and overlays, then confirm interpretation with a planner.",
+        "category": "Property and records",
+        "jurisdiction": "local",
+        "audience": [
+          "Locate zoning and overlays, then confirm interpretation with a planner."
+        ],
+        "aliases": [
+          "find my zoning",
+          "look up zoning",
+          "zoning map"
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-12",
+        "coverageLevel": "procedure",
+        "steps": [
+          {
+            "id": "step-1",
+            "title": "Confirm the planning department",
+            "detail": "Open Z-NET. County Planning serves areas outside incorporated cities; city areas need their own planning department.",
+            "sourceIds": [
+              "la-county-zoning-lookup"
+            ]
+          },
+          {
+            "id": "step-2",
+            "title": "Locate the property",
+            "detail": "Search the official map using the property address or assessor identification number. Review the zoning and relevant map layers.",
+            "sourceIds": [
+              "la-county-zoning-lookup"
+            ],
+            "action": {
+              "label": "Open official zoning instructions",
+              "url": "https://planning.lacounty.gov/how-do-i/find-my-zoning/"
+            },
+            "dependsOn": [
+              "step-1"
+            ]
+          },
+          {
+            "id": "step-3",
+            "title": "Confirm applicable rules",
+            "detail": "Ask a planner about zoning, overlays, and project requirements. Obtain parcel and recorded-document evidence separately.",
+            "sourceIds": [
+              "la-county-zoning-lookup"
+            ],
+            "caution": "A zoning map does not establish property rights or grant project approval.",
+            "dependsOn": [
+              "step-2"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "id": "la-county-zoning-lookup",
+            "title": "Find zoning in unincorporated Los Angeles County",
+            "url": "https://planning.lacounty.gov/how-do-i/find-my-zoning/",
+            "publisher": "Los Angeles County Planning",
+            "lastChecked": "2026-10-12"
+          }
+        ],
+        "officialAction": {
+          "label": "Open official instructions",
+          "url": "https://planning.lacounty.gov/how-do-i/find-my-zoning/"
+        },
+        "state": "CA",
+        "locality": "Los Angeles County",
+        "serviceArea": "unincorporated"
+      }
+    },
+    {
+      "authority_id": "authority:la-cleanla",
+      "topic": "public_property_repair",
+      "territory": {
+        "geoid": "06037",
+        "kind": "county"
+      },
+      "journey": {
+        "id": "journey-la-county-illegal-dumping",
+        "slug": "la-county-illegal-dumping",
+        "title": "Report illegal dumping in unincorporated Los Angeles County",
+        "summary": "Report dumped items on public streets, sidewalks, or rights-of-way.",
+        "category": "Local services",
+        "jurisdiction": "local",
+        "audience": [
+          "Report dumped items on public streets, sidewalks, or rights-of-way."
+        ],
+        "aliases": [
+          "illegal dumping",
+          "dumped couch",
+          "dumped furniture"
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-12",
+        "coverageLevel": "procedure",
+        "steps": [
+          {
+            "id": "step-1",
+            "title": "Check the site",
+            "detail": "Confirm the incident is in unincorporated County territory and on a public street, sidewalk, or right-of-way. City and private-property cases have different routes.",
+            "sourceIds": [
+              "la-county-illegal-dumping"
+            ]
+          },
+          {
+            "id": "step-2",
+            "title": "Prepare the report",
+            "detail": "Record the location and description; add a photo if available.",
+            "sourceIds": [
+              "la-county-illegal-dumping"
+            ],
+            "requirements": [
+              "Incident location.",
+              "Description of dumped material.",
+              "Photo if available."
+            ],
+            "dependsOn": [
+              "step-1"
+            ]
+          },
+          {
+            "id": "step-3",
+            "title": "Submit to Public Works",
+            "detail": "Use the official report link or Works app. You can also email dumping@pw.lacounty.gov or call 888-253-2652 during the listed office hours.",
+            "sourceIds": [
+              "la-county-illegal-dumping"
+            ],
+            "caution": "For private-property dumping, use the Building and Safety route linked on the official page.",
+            "dependsOn": [
+              "step-2"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "id": "la-county-illegal-dumping",
+            "title": "Report illegal dumping in unincorporated Los Angeles County",
+            "url": "https://cleanla.lacounty.gov/2026/09/21/keeping-la-county-clean/",
+            "publisher": "Los Angeles County Public Works \u2014 CleanLA",
+            "lastChecked": "2026-10-12"
+          }
+        ],
+        "officialAction": {
+          "label": "Open official instructions",
+          "url": "https://cleanla.lacounty.gov/2026/09/21/keeping-la-county-clean/"
+        },
+        "state": "CA",
+        "locality": "Los Angeles County",
+        "serviceArea": "unincorporated"
+      }
+    },
+    {
+      "authority_id": "authority:la-recorder",
+      "topic": "property",
+      "territory": {
+        "geoid": "06037",
+        "kind": "county"
+      },
+      "journey": {
+        "id": "journey-la-county-recorded-document",
+        "slug": "la-county-recorded-document",
+        "title": "Request recorded real-estate documents in Los Angeles County",
+        "summary": "Request copies of documents recorded with the County recorder.",
+        "category": "Property and records",
+        "jurisdiction": "local",
+        "audience": [
+          "Request copies of documents recorded with the County recorder."
+        ],
+        "aliases": [
+          "recorded deed",
+          "recorded documents",
+          "copy of my deed",
+          "real estate records"
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-12",
+        "coverageLevel": "procedure",
+        "steps": [
+          {
+            "id": "step-1",
+            "title": "Identify the recorded document",
+            "detail": "Gather the document title, names, and year or years to search. Confirm the document was recorded in Los Angeles County.",
+            "sourceIds": [
+              "la-county-recorded-document"
+            ],
+            "requirements": [
+              "Document title, names, and recording year or search years."
+            ]
+          },
+          {
+            "id": "step-2",
+            "title": "Prepare a written request",
+            "detail": "Follow the recorder mail instructions. Check the current fee for the document type; prepare a check or money order payable to Registrar-Recorder/County Clerk.",
+            "sourceIds": [
+              "la-county-recorded-document"
+            ],
+            "fees": [
+              "Fees vary by recorded-document type."
+            ],
+            "dependsOn": [
+              "step-1"
+            ]
+          },
+          {
+            "id": "step-3",
+            "title": "Send and retain your request",
+            "detail": "Send to RR/CC, Real Estate Records, P.O. Box 1130, Norwalk, CA 90651-1130. Allow the official processing period.",
+            "sourceIds": [
+              "la-county-recorded-document"
+            ],
+            "deadlines": [
+              "The recorder lists processing within 20 working days."
+            ],
+            "caution": "A document copy does not prove complete title or resolve property rights.",
+            "dependsOn": [
+              "step-2"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "id": "la-county-recorded-document",
+            "title": "Request recorded real-estate documents in Los Angeles County",
+            "url": "https://www.lavote.gov/home/recorder/real-estate-records/real-estate-records-request/mail-request",
+            "publisher": "Los Angeles County Registrar-Recorder/County Clerk",
+            "lastChecked": "2026-10-12"
+          }
+        ],
+        "officialAction": {
+          "label": "Open official instructions",
+          "url": "https://www.lavote.gov/home/recorder/real-estate-records/real-estate-records-request/mail-request"
+        },
+        "state": "CA",
+        "locality": "Los Angeles County",
+        "serviceArea": "entire-territory"
+      }
+    },
+    {
+      "authority_id": "authority:king-permitting",
+      "topic": "building_permit",
+      "territory": {
+        "geoid": "53033",
+        "kind": "county"
+      },
+      "journey": {
+        "id": "journey-king-county-building-permit",
+        "slug": "king-county-building-permit",
+        "title": "Apply for a building permit in unincorporated King County",
+        "summary": "Check the project location and prepare its County permit application.",
+        "category": "Building and permits",
+        "jurisdiction": "local",
+        "audience": [
+          "Check the project location and prepare its County permit application."
+        ],
+        "aliases": [
+          "building permit",
+          "construction permit",
+          "permit for a remodel"
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-12",
+        "coverageLevel": "procedure",
+        "steps": [
+          {
+            "id": "step-1",
+            "title": "Research the property",
+            "detail": "Confirm unincorporated County jurisdiction and zoning using County mapping tools. Check special conditions, including critical areas.",
+            "sourceIds": [
+              "king-county-building-permit"
+            ]
+          },
+          {
+            "id": "step-2",
+            "title": "Prepare the application",
+            "detail": "Use the project-specific document list. Include septic materials when required; incomplete applications cause delays.",
+            "sourceIds": [
+              "king-county-building-permit"
+            ],
+            "requirements": [
+              "Project-specific plans and application documents.",
+              "Applicable septic approval or application materials."
+            ],
+            "dependsOn": [
+              "step-1"
+            ]
+          },
+          {
+            "id": "step-3",
+            "title": "Select the submission route",
+            "detail": "Most listed permit types use MyBuildingPermit.com. Types outside that portal follow the County electronic submission instructions.",
+            "sourceIds": [
+              "king-county-building-permit"
+            ],
+            "action": {
+              "label": "Choose the official submission route",
+              "url": "https://kingcounty.gov/en/dept/local-services/certificates-permits-licenses/permits/permits-inspections-codes-buildings-land-use/permit-forms-application-materials/submit-permits"
+            },
+            "dependsOn": [
+              "step-2"
+            ]
+          },
+          {
+            "id": "step-4",
+            "title": "Follow review and issuance",
+            "detail": "Retain the application number, respond to reviewer requests, pay invoiced fees, and arrange inspections after issuance.",
+            "sourceIds": [
+              "king-county-building-permit"
+            ],
+            "fees": [
+              "Fees depend on the project."
+            ],
+            "caution": "Submitting a permit application is not approval to build.",
+            "dependsOn": [
+              "step-3"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "id": "king-county-building-permit",
+            "title": "Apply for a building permit in unincorporated King County",
+            "url": "https://kingcounty.gov/en/dept/local-services/certificates-permits-licenses/permits/permits-inspections-codes-buildings-land-use/permit-forms-application-materials/submit-permits",
+            "publisher": "King County Local Services",
+            "lastChecked": "2026-10-12"
+          }
+        ],
+        "officialAction": {
+          "label": "Open official instructions",
+          "url": "https://kingcounty.gov/en/dept/local-services/certificates-permits-licenses/permits/permits-inspections-codes-buildings-land-use/permit-forms-application-materials/submit-permits"
+        },
+        "state": "WA",
+        "locality": "King County",
+        "serviceArea": "unincorporated"
+      }
+    },
+    {
+      "authority_id": "authority:king-roads",
+      "topic": "public_property_repair",
+      "territory": {
+        "geoid": "53033",
+        "kind": "county"
+      },
+      "journey": {
+        "id": "journey-king-county-pothole",
+        "slug": "king-county-pothole",
+        "title": "Report a pothole in unincorporated King County",
+        "summary": "Contact Road Services about a roadway defect in its service area.",
+        "category": "Local services",
+        "jurisdiction": "local",
+        "audience": [
+          "Contact Road Services about a roadway defect in its service area."
+        ],
+        "aliases": [
+          "report a pothole",
+          "pothole repair",
+          "roadway defect"
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-12",
+        "coverageLevel": "procedure",
+        "steps": [
+          {
+            "id": "step-1",
+            "title": "Identify the road and defect",
+            "detail": "Record the pothole location, nearest cross street, and a description. Confirm the roadway is in the County service area.",
+            "sourceIds": [
+              "king-county-pothole"
+            ],
+            "requirements": [
+              "Location and nearest cross street.",
+              "Description and pertinent details."
+            ]
+          },
+          {
+            "id": "step-2",
+            "title": "Call the road helpline",
+            "detail": "Call 206-477-8100 or 1-800-527-6237. Provide your name and daytime contact details directly to the agency.",
+            "sourceIds": [
+              "king-county-pothole"
+            ],
+            "caution": "City, state, and private roads may require a different agency.",
+            "dependsOn": [
+              "step-1"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "id": "king-county-pothole",
+            "title": "Report a pothole in unincorporated King County",
+            "url": "https://kingcounty.gov/en/dept/local-services/transit-transportation-roads/roads-and-bridges/road-services/maintenance/pothole-repair",
+            "publisher": "King County Road Services",
+            "lastChecked": "2026-10-12"
+          }
+        ],
+        "officialAction": {
+          "label": "Open official instructions",
+          "url": "https://kingcounty.gov/en/dept/local-services/transit-transportation-roads/roads-and-bridges/road-services/maintenance/pothole-repair"
+        },
+        "state": "WA",
+        "locality": "King County",
+        "serviceArea": "unincorporated"
+      }
+    },
+    {
+      "authority_id": "authority:usagov",
+      "topic": "voter_registration",
+      "territory": {
+        "id": "country:US"
+      },
+      "journey": {
+        "id": "journey-voter-registration-start",
+        "slug": "voter-registration-start",
+        "title": "Find your voter registration route",
+        "summary": "Use the official national starting point to reach your election authority.",
+        "category": "Voting and civic life",
+        "jurisdiction": "federal",
+        "audience": [
+          "Use the official national starting point to reach your election authority."
+        ],
+        "aliases": [
+          "register to vote",
+          "voter registration",
+          "update voter registration"
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-12",
+        "coverageLevel": "official-handoff",
+        "steps": [
+          {
+            "id": "step-1",
+            "title": "Choose voting residence",
+            "detail": "Select your voting state or territory through Vote.gov. Do not assume rules are the same nationwide.",
+            "sourceIds": [
+              "voter-registration-start"
+            ],
+            "action": {
+              "label": "Find my state voting route",
+              "url": "https://vote.gov/register"
+            }
+          },
+          {
+            "id": "step-2",
+            "title": "Check eligibility and deadline",
+            "detail": "Confirm your state requirements, accepted identity evidence, and current deadline with its election office.",
+            "sourceIds": [
+              "voter-registration-start"
+            ],
+            "dependsOn": [
+              "step-1"
+            ]
+          },
+          {
+            "id": "step-3",
+            "title": "Use an available official method",
+            "detail": "Follow the selected state online, mail, or in-person instructions. National forms are not accepted everywhere.",
+            "sourceIds": [
+              "voter-registration-start"
+            ],
+            "dependsOn": [
+              "step-2"
+            ]
+          },
+          {
+            "id": "step-4",
+            "title": "Confirm registration",
+            "detail": "Check your registration status through the official election office after submission.",
+            "sourceIds": [
+              "voter-registration-start"
+            ],
+            "dependsOn": [
+              "step-3"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "id": "voter-registration-start",
+            "title": "Find your voter registration route",
+            "url": "https://www.usa.gov/register-to-vote",
+            "publisher": "USAGov",
+            "lastChecked": "2026-10-12"
+          }
+        ],
+        "officialAction": {
+          "label": "Open official instructions",
+          "url": "https://www.usa.gov/register-to-vote"
+        },
+        "scopeNote": "National starting route only. The state or local election office handles registration; North Dakota does not require voter registration."
+      }
+    },
+    {
+      "authority_id": "authority:usagov",
+      "topic": "birth_certificate",
+      "territory": {
+        "id": "country:US"
+      },
+      "journey": {
+        "id": "journey-birth-certificate-start",
+        "slug": "birth-certificate-start",
+        "title": "Find the office for your birth certificate",
+        "summary": "Find the records office where the birth occurred, then check its certified-copy requirements.",
+        "category": "Documents and identity",
+        "jurisdiction": "federal",
+        "audience": [
+          "Find the records office where the birth occurred, then check its certified-copy requirements."
+        ],
+        "aliases": [
+          "birth certificate",
+          "birth record",
+          "certified birth copy"
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-12",
+        "coverageLevel": "official-handoff",
+        "steps": [
+          {
+            "id": "step-1",
+            "title": "Use the place of birth",
+            "detail": "Identify the birth state or territory and locality. Your current residence does not determine the records office.",
+            "sourceIds": [
+              "birth-certificate-start"
+            ],
+            "requirements": [
+              "Birth state or territory and city or county."
+            ]
+          },
+          {
+            "id": "step-2",
+            "title": "Find the issuing office",
+            "detail": "Use the official vital-records directory linked by USAGov. Births abroad may need a Consular Report of Birth Abroad or a foreign record.",
+            "sourceIds": [
+              "birth-certificate-start"
+            ],
+            "action": {
+              "label": "Find my issuing office",
+              "url": "https://www.cdc.gov/nchs/w2w/index.htm"
+            },
+            "dependsOn": [
+              "step-1"
+            ]
+          },
+          {
+            "id": "step-3",
+            "title": "Check copy and identity requirements",
+            "detail": "Confirm eligible requesters, acceptable identity evidence, fees, and the application method directly with the issuing office.",
+            "sourceIds": [
+              "birth-certificate-start"
+            ],
+            "caution": "Select the certified-copy type required for your intended use.",
+            "dependsOn": [
+              "step-2"
+            ]
+          },
+          {
+            "id": "step-4",
+            "title": "Submit through the issuing office",
+            "detail": "Use that office official route and follow its processing instructions. Fees and timing vary.",
+            "sourceIds": [
+              "birth-certificate-start"
+            ],
+            "dependsOn": [
+              "step-3"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "id": "birth-certificate-start",
+            "title": "Find the office for your birth certificate",
+            "url": "https://www.usa.gov/birth-certificate",
+            "publisher": "USAGov",
+            "lastChecked": "2026-10-12"
+          }
+        ],
+        "officialAction": {
+          "label": "Open official instructions",
+          "url": "https://www.usa.gov/birth-certificate"
+        },
+        "scopeNote": "National office-finding route only. Confirm the place of birth and issuing-office requirements; current residence is not the record jurisdiction."
+      }
+    },
+    {
+      "authority_id": "authority:irs",
+      "topic": "business_tax_id",
+      "territory": {
+        "id": "country:US"
+      },
+      "journey": {
+        "id": "journey-irs-ein",
+        "slug": "irs-ein",
+        "title": "Get an Employer Identification Number from the IRS",
+        "summary": "Apply for a federal business tax ID through the free IRS service.",
+        "category": "Business and taxes",
+        "jurisdiction": "federal",
+        "audience": [
+          "Apply for a federal business tax ID through the free IRS service."
+        ],
+        "aliases": [
+          "ein",
+          "employer identification number",
+          "business tax id"
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-12",
+        "coverageLevel": "procedure",
+        "steps": [
+          {
+            "id": "step-1",
+            "title": "Check the application route",
+            "detail": "The online tool requires a domestic organization, a principal business location in the US or territories, and a responsible party or authorized representative.",
+            "sourceIds": [
+              "irs-ein"
+            ]
+          },
+          {
+            "id": "step-2",
+            "title": "Prepare organization details",
+            "detail": "Complete any required state entity formation first. Prepare the responsible party SSN or ITIN for entry only on the official IRS site.",
+            "sourceIds": [
+              "irs-ein",
+              "irs-ein-formation"
+            ],
+            "requirements": [
+              "Entity and responsible-party information."
+            ],
+            "caution": "Do not enter tax identification numbers in Govroute.",
+            "dependsOn": [
+              "step-1"
+            ]
+          },
+          {
+            "id": "step-3",
+            "title": "Apply on the IRS website",
+            "detail": "Use the free official service in one session. If approved online, your EIN is issued immediately.",
+            "sourceIds": [
+              "irs-ein"
+            ],
+            "fees": [
+              "$0 through the IRS."
+            ],
+            "deadlines": [
+              "The online application expires after 15 minutes of inactivity."
+            ],
+            "action": {
+              "label": "Open the free IRS application route",
+              "url": "https://www.irs.gov/businesses/small-businesses-self-employed/get-an-employer-identification-number"
+            },
+            "dependsOn": [
+              "step-2"
+            ]
+          },
+          {
+            "id": "step-4",
+            "title": "Save the confirmation",
+            "detail": "Print or save the EIN confirmation letter. Check alternative IRS routes if the online eligibility rules do not fit.",
+            "sourceIds": [
+              "irs-ein",
+              "irs-ein-formation"
+            ],
+            "caution": "An EIN does not replace state business formation or local permits.",
+            "dependsOn": [
+              "step-3"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "id": "irs-ein",
+            "title": "Get an Employer Identification Number from the IRS",
+            "url": "https://www.irs.gov/businesses/small-businesses-self-employed/get-an-employer-identification-number",
+            "publisher": "Internal Revenue Service",
+            "lastChecked": "2026-10-12"
+          },
+          {
+            "id": "irs-ein-formation",
+            "title": "EIN prerequisites and alternative routes",
+            "url": "https://www.irs.gov/businesses/employer-identification-number",
+            "publisher": "Internal Revenue Service",
+            "lastChecked": "2026-10-12"
+          }
+        ],
+        "officialAction": {
+          "label": "Open official instructions",
+          "url": "https://www.irs.gov/businesses/small-businesses-self-employed/get-an-employer-identification-number"
+        }
+      }
+    },
+    {
+      "authority_id": "authority:usagov",
+      "topic": "driver_license",
+      "territory": {
+        "id": "country:US"
+      },
+      "journey": {
+        "id": "journey-driver-license-start",
+        "slug": "driver-license-start",
+        "title": "Find your driver license application or renewal route",
+        "summary": "Use the official state motor-vehicle directory to find licensing services. Vehicle and licensing offices may differ.",
+        "category": "Driving and transportation",
+        "jurisdiction": "federal",
+        "audience": [
+          "People checking the official task route"
+        ],
+        "aliases": [
+          "renew driver license",
+          "renew my license",
+          "drivers license",
+          "driver license"
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-12",
+        "coverageLevel": "official-handoff",
+        "scopeNote": "The receiving agency sets eligibility, documents, fees, timing, and the application method.",
+        "steps": [
+          {
+            "id": "step-1",
+            "title": "Select the responsible state",
+            "detail": "Use the official state motor-vehicle directory to find licensing services. Vehicle and licensing offices may differ.",
+            "sourceIds": [
+              "driver-license-start"
+            ]
+          },
+          {
+            "id": "step-2",
+            "title": "Choose the task",
+            "detail": "Choose first application, renewal, replacement, or transfer. Follow that agency eligibility and document checklist.",
+            "sourceIds": [
+              "driver-license-start"
+            ],
+            "dependsOn": [
+              "step-1"
+            ]
+          },
+          {
+            "id": "step-3",
+            "title": "Confirm requirements and apply",
+            "detail": "Check fees, tests, appointment requirements, and the submission method directly with the licensing agency.",
+            "sourceIds": [
+              "driver-license-start"
+            ],
+            "dependsOn": [
+              "step-2"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "id": "driver-license-start",
+            "title": "Find your driver license application or renewal route",
+            "url": "https://www.usa.gov/state-motor-vehicle-services",
+            "publisher": "USAGov",
+            "lastChecked": "2026-10-12"
+          }
+        ],
+        "officialAction": {
+          "label": "Open official starting route",
+          "url": "https://www.usa.gov/state-motor-vehicle-services"
+        }
+      }
+    },
+    {
+      "authority_id": "authority:vote-gov",
+      "topic": "voter_registration",
+      "territory": {
+        "state_code": "ND"
+      },
+      "journey": {
+        "id": "journey-nd-voting-start",
+        "slug": "nd-voting-start",
+        "title": "Check voting requirements in North Dakota",
+        "summary": "North Dakota does not require voter registration. Check eligibility and identification requirements instead.",
+        "category": "Voting and civic life",
+        "jurisdiction": "state",
+        "audience": [
+          "People checking the official task route"
+        ],
+        "aliases": [
+          "register to vote",
+          "voter registration",
+          "voting in North Dakota"
+        ],
+        "reviewStatus": "verified",
+        "reviewedAt": "2026-10-12",
+        "coverageLevel": "official-handoff",
+        "scopeNote": "The receiving agency sets eligibility, documents, fees, timing, and the application method.",
+        "steps": [
+          {
+            "id": "step-1",
+            "title": "Registration is not required",
+            "detail": "North Dakota does not require voter registration. Check eligibility and identification requirements instead.",
+            "sourceIds": [
+              "nd-voting-start"
+            ]
+          },
+          {
+            "id": "step-2",
+            "title": "Check the official voting instructions",
+            "detail": "Follow the state election office links on Vote.gov for current identification, residence, and voting instructions.",
+            "sourceIds": [
+              "nd-voting-start"
+            ],
+            "dependsOn": [
+              "step-1"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "id": "nd-voting-start",
+            "title": "Check voting requirements in North Dakota",
+            "url": "https://vote.gov/register/north-dakota",
+            "publisher": "Vote.gov",
+            "lastChecked": "2026-10-12"
+          }
+        ],
+        "officialAction": {
+          "label": "Open official starting route",
+          "url": "https://vote.gov/register/north-dakota"
+        },
+        "state": "ND"
       }
     }
   ]

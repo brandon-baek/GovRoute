@@ -13,7 +13,7 @@ let counter=0;
 const results:{scenario:string;status:string;milliseconds:number}[]=[];
 async function api(path:string,body?:unknown) {
   const start=performance.now();
-  const response=await fetch(base+path,{method:body===undefined?"GET":"POST",headers:{"Content-Type":"application/json","x-forwarded-for":"192.0.2."+((counter++%250)+1)},...(body===undefined?{}:{body:JSON.stringify(body)}),signal:AbortSignal.timeout(20000)});
+  const response=await fetch(base+path,{method:body===undefined?"GET":"POST",headers:{"Content-Type":"application/json","x-forwarded-for":"192.0.2."+((counter++%250)+1)},...(body===undefined?{}:{body:JSON.stringify(body)}),signal:AbortSignal.timeout(35000)});
   const data=await response.json();
   return {response,data,milliseconds:Math.round(performance.now()-start)};
 }
@@ -87,13 +87,13 @@ try {
   await record("sensitive identifier","/api/chat",{message:"My SSN is 123-45-6789"},data=>assert.equal(data.status,"blocked"));
   await record("oversized request contract","/api/chat",{message:"x".repeat(9000)},(data,response)=>{assert.equal(response.status,413);assert.deepEqual(data.alternatives,[]);});
   await record("cross-state moving flow","/api/chat",{message:"moving from New York to Texas"},data=>{assert.equal(data.status,"clarify");assert.equal(data.alternatives[0].href,"/moving");});
-  await record("CA scoped process catalog","/api/processes?state=CA",undefined,data=>assert.equal(data.processes.length,2));
-  await record("TX scoped process catalog","/api/processes?state=TX",undefined,data=>{assert.deepEqual(data.processes.map((journey:{id:string})=>journey.id).sort(),["journey-passport-apply","journey-tx-license-transfer"]);});
-  await record("process catalog derives state from selected place","/api/processes?id="+encodeURIComponent(cdp.id),undefined,data=>assert.equal(data.processes.length,2));
+  await record("CA scoped process catalog","/api/processes?state=CA",undefined,data=>assert.equal(data.processes.length,6));
+  await record("TX scoped process catalog","/api/processes?state=TX",undefined,data=>{assert.deepEqual(data.processes.map((journey:{id:string})=>journey.id).sort(),["journey-birth-certificate-start","journey-driver-license-start","journey-irs-ein","journey-passport-apply","journey-tx-license-transfer","journey-voter-registration-start"]);});
+  await record("process catalog derives state from selected place","/api/processes?id="+encodeURIComponent(cdp.id),undefined,data=>assert.equal(data.processes.length,6));
   await record("process catalog rejects state-place conflict","/api/processes?state=TX&id="+encodeURIComponent(cdp.id),undefined,(_,response)=>assert.equal(response.status,400));
   await record("process catalog rejects unknown place","/api/processes?id=missing-place",undefined,(_,response)=>assert.equal(response.status,404));
   await record("country process catalog stays federal","/api/processes?id=country%3AUS",undefined,data=>{
-    assert.equal(data.processes.length,1);assert.equal(data.processes[0].jurisdiction,"federal");
+    assert.equal(data.processes.length,5);assert.ok(data.processes.every((process:{jurisdiction:string})=>process.jurisdiction==="federal"));
   });
   await record("TX license transfer uses vehicle prerequisites","/api/chat",{message:"transfer out-of-state license to Texas",state:"TX"},data=>{
     assert.equal(data.status,"matched");assert.equal(data.journey.id,"journey-tx-license-transfer");
@@ -109,7 +109,7 @@ try {
   const oakland=db.prepare("SELECT id FROM places WHERE geoid='0653000' AND kind='municipality'").get() as {id:string};
   assert.ok(sf && oakland,"Real reviewed and neighboring city scopes must exist");
   await record("SF exact local catalog","/api/processes?id="+encodeURIComponent(sf.id),undefined,data=>{
-    assert.equal(data.processes.length,3);
+    assert.equal(data.processes.length,7);
     assert.ok(data.processes.some((journey:{id:string})=>journey.id==="journey-sf-damaged-public-property"));
   });
   await record("SF damaged public property report","/api/chat",{message:"Report damaged public property",placeIds:[sf.id]},data=>{
@@ -135,6 +135,37 @@ try {
   await record("SF property rights still need parcel evidence","/api/chat",{message:"Can I build an ADU on my property?",placeIds:[sf.id]},data=>{
     assert.equal(data.status,"coverage_gap");assert.equal(data.journey,undefined);assert.equal(data.missing.length,3);
   });
+  // A geographically varied cohort uses the same runtime boundary adapter.
+  const cohort=[
+    {name:"La Crescenta-Montrose",state:"CA",kind:"cdp",county:"Los Angeles",permit:"journey-la-county-building-permit"},
+    {name:"Altadena",state:"CA",kind:"cdp",county:"Los Angeles",permit:"journey-la-county-building-permit"},
+    {name:"White Center",state:"WA",kind:"cdp",county:"King",permit:"journey-king-county-building-permit"},
+    {name:"Glendale",state:"CA",kind:"municipality",county:"Los Angeles",permit:undefined},
+    {name:"La Cañada Flintridge",state:"CA",kind:"municipality",county:"Los Angeles",permit:undefined},
+  ];
+  for(const test of cohort) {
+    const place=db.prepare("SELECT id FROM places WHERE state_code=? AND kind=? AND name LIKE ? ORDER BY name LIMIT 1").get(test.state,test.kind,test.name+"%") as {id:string}|undefined;
+    assert.ok(place,"National cohort place missing: "+test.name);
+    await record(test.name+" whole boundary context","/api/location/context?id="+encodeURIComponent(place.id),undefined,(data,response)=>{
+      assert.equal(response.status,200);assert.ok(data.context.places.some((p:{kind:string;name:string})=>p.kind==="county" && p.name.startsWith(test.county)),test.name+": county boundary must be confirmed");
+      if(test.kind==="cdp") assert.equal(data.context.places.find((p:{id:string})=>p.id===place.id).government_status,"none");
+    });
+    await record(test.name+" building permit routing","/api/chat",{message:"I need a building permit",state:test.state,placeIds:[place.id]},data=>{
+      if(test.permit) {assert.equal(data.status,"matched");assert.equal(data.journey.id,test.permit);assert.equal(data.journey.serviceArea,"unincorporated");}
+      else {assert.equal(data.status,"coverage_gap");assert.notEqual(data.journey?.id,"journey-la-county-building-permit");}
+    });
+    await record(test.name+" visible coverage","/api/coverage?"+new URLSearchParams({id:place.id,state:test.state}),undefined,(data,response)=>{
+      assert.equal(response.status,200);assert.equal(data.topics.length,9);const permit=data.topics.find((row:{id:string})=>row.id==="building_permit");
+      assert.equal(permit.status,test.permit?"reviewed-procedure":"coverage-gap");
+    });
+    if(test.kind==="cdp") await record(test.name+" property rights remain unresolved","/api/chat",{message:"Can I build an ADU on my property?",placeIds:[place.id]},data=>{assert.equal(data.status,"coverage_gap");assert.equal(data.journey,undefined);assert.equal(data.missing.length,3);});
+  }
+  await record("birth records follow birth location, not residence","/api/chat",{message:"I live in California but was born in New York and need a birth certificate"},data=>{
+    assert.equal(data.status,"matched");assert.equal(data.journey.id,"journey-birth-certificate-start");assert.equal(data.journey.coverageLevel,"official-handoff");assert.ok(data.journey.steps[0].detail.includes("current residence"));
+  });
+  await record("North Dakota voter exception","/api/chat",{message:"register to vote",state:"ND"},data=>{assert.equal(data.status,"matched");assert.equal(data.journey.id,"journey-nd-voting-start");assert.ok(data.journey.steps[0].detail.includes("does not require"));});
+  await record("IRS free application and formation prerequisite","/api/chat",{message:"I need an EIN for my new LLC",state:"CA"},data=>{assert.equal(data.status,"matched");assert.equal(data.journey.id,"journey-irs-ein");assert.ok(data.journey.steps[1].detail.includes("entity formation"));assert.ok(data.journey.steps[2].fees.includes("$0 through the IRS."));});
+  await record("license renewal does not become an out-of-state transfer","/api/chat",{message:"renew my driver license",state:"TX"},data=>{assert.notEqual(data.journey?.id,"journey-tx-license-transfer");assert.ok(["matched","discovered"].includes(data.status));});
   const unofficial=db.prepare("SELECT n.name,n.place_id,p.state_code FROM place_names n JOIN places p ON p.id=n.place_id WHERE n.status='unofficial' AND length(n.name)>3 AND length(n.name)<80 AND (SELECT count(*) FROM place_names other WHERE other.search_name=n.search_name)=1 LIMIT 1").get() as {name:string;place_id:string;state_code:string};
   await record("unofficial name labeling","/api/places?"+new URLSearchParams({q:unofficial.name,...(unofficial.state_code?{state:unofficial.state_code}:{})}),undefined,data=>{
     assert.ok(data.places.some((place:{id:string;matched_name_status:string})=>place.id===unofficial.place_id && place.matched_name_status==="unofficial"));

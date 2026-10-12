@@ -4,6 +4,7 @@ import { journeys } from "@/data/curated/journeys";
 import { discoveredGuides } from "@/lib/discovered-guides";
 import { registryCoverage } from "@/lib/place-registry";
 import { processJourneys } from "@/lib/process-catalog";
+import { CoverageExplorer } from "@/components/CoverageExplorer";
 
 export const metadata: Metadata = { title: "Data and sourcing" };
 export const dynamic = "force-dynamic";
@@ -18,7 +19,8 @@ export default async function DataPage() {
       <header className="page-intro"><p className="eyebrow">Data and sourcing</p><h1>Every guide shows<br />what supports it.</h1><p>The same generated pathway catalog powers browsing, guidance matching, permanent guide pages, and the knowledge graph.</p></header>
       <div className="data-totals" aria-label="Current graph totals"><div><strong>{journeys.length + discoveredGuides.length}</strong><span>total government guides</span></div><div><strong>{sources}</strong><span>official source pages</span></div><div><strong>{agencies}</strong><span>publishers and services</span></div></div>
       <section><h2>Two guide levels</h2><p>{journeys.length} reviewed guides contain ordered steps checked against official sources. {discoveredGuides.length} discovered guides expose official outcomes and destinations immediately while their detailed instructions await review.</p></section>
-      <section><h2>Structured pathways</h2><p>{processJourneys.length} reviewed pathways now use the new process model, with documents, fees, timing, dependencies, and citations attached to individual steps. The small publication catalog works without the national place database. Publication review and automated source indexing are separate checks; an unavailable page is never counted as successfully indexed.</p></section>
+      <section><h2>Structured pathways</h2><p>{processJourneys.filter(j=>j.coverageLevel!=="official-handoff").length} source-checked procedures and {processJourneys.filter(j=>j.coverageLevel==="official-handoff").length} official starting routes use the structured process model. Steps carry preparation, fees, timing, dependencies, and source citations when applicable. Starting routes hand off to an agency whose requirements still need confirmation. Publication review and automated source indexing are separate checks.</p></section>
+      <CoverageExplorer />
       <section><h2>Autonomous expansion</h2><p>Twice-monthly jobs advance through federal and state site inventories, preserve earlier discoveries, rank action-oriented pages, generate guide records and graph links, build the site, and publish the new snapshot when every gate passes.</p></section>
       <section><h2>Search-quality gate</h2><p>Every discovered path is browsable. Thin or administrative pages remain out of the XML sitemap and carry a no-index directive until the crawler has enough useful title and summary detail for a worthwhile search result.</p></section>
       <section><h2>Coverage is measurable</h2><p>Government changes too quickly for a truthful claim of permanent completeness. govroute exposes current counts and statuses while the scheduled crawler steadily expands coverage within each site’s robots rules and rate limits.</p></section>

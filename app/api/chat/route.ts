@@ -11,10 +11,11 @@ import { consumeRequest, consumeAIRoute } from "@/lib/request-limits";
 import { stateByCode, statesInText } from "@/lib/jurisdictions";
 import { contextForPlaces, relevantLegalSources } from "@/lib/place-registry";
 import { parcelRequirements, requiresParcelEvidence } from "@/lib/place-context";
-import { processJourneys } from "@/lib/process-catalog";
+import { processJourneys, processPublications } from "@/lib/process-catalog";
 import { publishedProcesses } from "@/lib/process-registry";
 import { publicationPlaceIds } from "@/lib/scope-context";
 import { localResources } from "@/lib/local-resources";
+import { isPropertyLookup, taskTopic } from "@/lib/task-topics";
 
 export const runtime = "nodejs";
 
@@ -65,12 +66,14 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const context = body.placeIds?.length ? await contextForPlaces(body.placeIds) : undefined;
+    const needsCounty=["building_permit","property","public_property_repair"].includes(taskTopic(body.message)??"") || requiresParcelEvidence(body.message);
+    const context = body.placeIds?.length ? await contextForPlaces(body.placeIds,"community",[],needsCounty) : undefined;
     if (body.placeIds?.length && body.placeIds.some(id => !context?.places.some(place => place.id === id))) return NextResponse.json({ status: "clarify", message: "Your selected place is unavailable. Search for the location again or choose a state.", alternatives: [] });
     const contextStates = [...new Set(context?.places.map((place) => place.state_code).filter((code): code is string => Boolean(code)) ?? [])];
     if (contextStates.length > 1 || (body.state && contextStates.length === 1 && body.state !== contextStates[0])) return NextResponse.json({ status: "clarify", message: "Your location crosses state boundaries or differs from the selected state. Choose the state whose process you need.", alternatives: [] });
     const locations = statesInText(body.message);
     const federalPassport = /\bpassport\b/i.test(body.message);
+    const independentRecordTask=taskTopic(body.message)==="birth_certificate";
     const location = body.state ?? contextStates[0] ?? locations[0]?.code;
     const directStateTask = Boolean(location) && (
       (/\blicense\b/i.test(body.message) && /\b(transfer|get|apply|need)\b/i.test(body.message))
@@ -84,10 +87,15 @@ export async function POST(request: NextRequest) {
         || (!directStateTask && /\b(driver|driving|license|vehicle|registration|car)\b/i.test(body.message)))) {
       return NextResponse.json({ status: "clarify", message: "Moving between states? Choose your origin and destination in the moving planner to combine both jurisdictions into one checklist.", alternatives: [{ id: "moving", slug: "", title: "Build my moving checklist", href: "/moving" }] });
     }
-    if (!federalPassport && !body.state && locations.length > 1) return NextResponse.json({ status: "clarify", message: "Which state's rules should I use? Choose a state above or use the moving planner for a cross-state process.", alternatives: [] });
-    if (!federalPassport && body.state && locations.length === 1 && body.state !== locations[0].code) return NextResponse.json({ status: "clarify", message: "Your request names a different state from the selected location. Choose the state whose rules you need, then try again.", alternatives: [] });
-    if (requiresParcelEvidence(body.message)) {
-      const sources = await relevantLegalSources(context?.places.map((place) => place.id) ?? [], "property");
+    if (!federalPassport && !independentRecordTask && !body.state && locations.length > 1) return NextResponse.json({ status: "clarify", message: "Which state's rules should I use? Choose a state above or use the moving planner for a cross-state process.", alternatives: [] });
+    if (!federalPassport && !independentRecordTask && body.state && locations.length === 1 && body.state !== locations[0].code) return NextResponse.json({ status: "clarify", message: "Your request names a different state from the selected location. Choose the state whose rules you need, then try again.", alternatives: [] });
+    const scopedIds=publicationPlaceIds(context,body.placeIds??[]);
+    const processes = await publishedProcesses(location, scopedIds, context);
+    if (requiresParcelEvidence(body.message) && !isPropertyLookup(body.message)) {
+      const existingSources = await relevantLegalSources(scopedIds, "property");
+      const propertyIds=new Set(processPublications.filter(item=>item.topic==="property").map(item=>item.journey.id));
+      const propertySources=processes.journeys.filter(journey=>propertyIds.has(journey.id)).flatMap(journey=>journey.sources);
+      const sources=[...existingSources,...propertySources.filter(source=>!(existingSources as {id:string}[]).some(item=>item.id===source.id))];
       const directoryResources = await localResources(context, body.message);
       return NextResponse.json({ status: "coverage_gap", message: "To find what you can do on a particular property, start with its parcel, zoning, and recorded restrictions. A community name or address-range match does not establish your land rights.",
         alternatives: [], steps: parcelRequirements, sources, directoryResources, title: "Find the rules for your property",
@@ -95,11 +103,14 @@ export async function POST(request: NextRequest) {
         scopeNote: sources.length ? "These are potentially relevant official sources. A property-specific pathway still requires the listed records." : "Property-specific sources have not been connected for this location yet." });
     }
     const stored = getStoredJourneys();
-    const scopedIds=publicationPlaceIds(context,body.placeIds??[]);
-    const processes = await publishedProcesses(location, scopedIds);
     const processIds = new Set([...processJourneys, ...processes.journeys].map((journey) => journey.id));
     const records = [...stored.journeys.filter((journey) => !processIds.has(journey.id)), ...processes.journeys];
-    let matches = retrieveJourneys(body.message, 8, records, location, scopedIds);
+    const topic=taskTopic(body.message);
+    const topicById=new Map(processPublications.map(item=>[item.journey.id,item.topic]));
+    const transferTask=/\b(transfer|out.of.state|new.resident|mov(?:e|ed|ing))\b/i.test(body.message);
+    const topicRecords=(topic ? records.filter(journey=>!topicById.has(journey.id) || topicById.get(journey.id)===topic) : records)
+      .filter(journey=>transferTask || !["journey-ca-new-resident","journey-tx-license-transfer"].includes(journey.id));
+    let matches = retrieveJourneys(body.message, 8, topicRecords, location, scopedIds);
     // Legacy local guides use names rather than stable jurisdiction IDs. Until
     // migrated, they must not be certified by a free-text postal/community name.
     const confirmedLocality = context?.places.find((place) => place.kind === "municipality" && place.government_status === "active")?.name;
@@ -140,7 +151,7 @@ export async function POST(request: NextRequest) {
         provenance: { router: "discovered-guide-index", assembledFrom: [bestDiscovered.guide.sourceId] }
       });
     }
-    if ((classification !== "matched" || matches[0]?.journey.jurisdiction !== "local" || !processIds.has(matches[0].journey.id)) && /\b(building permit|construction permit|trash collection|garbage collection|sewer service|water service|local ordinance|damaged public property|(?:broken|damaged) (?:bench|bike rack|parking meter|transit shelter))\b/i.test(body.message)) {
+    if ((classification !== "matched" || matches[0]?.journey.jurisdiction !== "local" || !processIds.has(matches[0].journey.id)) && /\b(building permit|construction permit|trash collection|garbage collection|sewer service|water service|local ordinance|pothole|illegal dumping|dumped couch|damaged public property|(?:broken|damaged) (?:bench|bike rack|parking meter|transit shelter))\b/i.test(body.message)) {
       if (!location && !context?.places.length) return NextResponse.json({status:"clarify",message:"Choose a community or address area so I can find official local starting points.",alternatives:[]});
       const directoryResources=await localResources(context,body.message);
       return NextResponse.json({status:"coverage_gap",title:"Find your local service",message:"This local procedure has not been verified for your selected area yet.",alternatives:[],

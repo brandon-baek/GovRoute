@@ -6,6 +6,7 @@ import { extractSnapshot, type SnapshotManifest } from "@/lib/registry-snapshot"
 import path from "node:path";
 import type { CensusMatch } from "@/lib/place-context";
 import { geographyReferences } from "@/lib/place-context";
+import { containingCounty } from "@/lib/county-boundary";
 
 export type Place = {
   id: string; name: string; kind: string; state_code: string | null; state_fips: string | null;
@@ -60,7 +61,7 @@ export async function searchPlaces(query: string, state?: string): Promise<Place
     .all(...[clean + "%", ...(state ? [state.toUpperCase()] : []), normalize(query)]) as Place[];
 }
 
-export async function contextForPlaces(ids: string[], precision: PlaceContext["precision"] = "community", unresolved: PlaceContext["unresolved"] = []): Promise<PlaceContext> {
+export async function contextForPlaces(ids: string[], precision: PlaceContext["precision"] = "community", unresolved: PlaceContext["unresolved"] = [], enrichCounty = false): Promise<PlaceContext> {
   const db = await openRegistry();
   if (!db || !ids.length) return { places: [], relations: [], authorities: [], unresolved, precision };
   const keys = [...new Set(ids)].slice(0, 60);
@@ -76,7 +77,31 @@ export async function contextForPlaces(ids: string[], precision: PlaceContext["p
   const allSlots = allIds.map(() => "?").join(",");
   const relations = db.prepare(`SELECT child_id,parent_id,relation,evidence FROM place_relations WHERE child_id IN (${allSlots}) AND parent_id IN (${allSlots})`).all(...allIds, ...allIds) as PlaceContext["relations"];
   const authorities = db.prepare(`SELECT id,name,level,verification FROM authorities WHERE place_id IN (${allSlots})`).all(...allIds) as PlaceContext["authorities"];
-  return { places: all, relations, authorities, unresolved, precision };
+  const context = { places: all, relations, authorities, unresolved: [...unresolved], precision };
+  if (precision === "community" && enrichCounty) {
+    for (const place of all.filter(p => keys.includes(p.id) && ["cdp", "municipality"].includes(p.kind))) {
+      if (relations.some(r => r.child_id === place.id && r.relation === "contained_by" && all.some(p => p.id === r.parent_id && p.kind === "county"))) continue;
+      const layer = db.prepare("SELECT p.geoid,d.url FROM places p JOIN datasets d ON d.id=p.dataset_id WHERE p.id=?").get(place.id) as {geoid:string;url:string};
+      const countyLayer = db.prepare("SELECT d.url FROM places p JOIN datasets d ON d.id=p.dataset_id WHERE p.kind='county' LIMIT 1").get() as {url:string} | undefined;
+      if (!countyLayer) continue;
+      const geoid = await cachedCounty(layer.url, countyLayer.url, layer.geoid);
+      const county = geoid ? db.prepare(`SELECT ${placeColumns} FROM places p WHERE p.geoid=? AND p.kind='county'`).get(geoid) as Place | undefined : undefined;
+      if (!county) { context.unresolved.push({layer:"County boundary",geoid:layer.geoid,name:"County containment was not confirmed. Use a street address for county-specific tasks."}); continue; }
+      if (!all.some(p => p.id === county.id)) all.push(county);
+      relations.push({child_id:place.id,parent_id:county.id,relation:"contained_by",evidence:"Current Census TIGERweb county contains the full selected community polygon; geographic context only."});
+    }
+  }
+  return context;
+}
+
+const countyCache = new Map<string, {expires:number; result:Promise<string|null>}>();
+function cachedCounty(placeLayer:string, countyLayer:string, geoid:string) {
+  const key = placeLayer + ":" + geoid; const cached = countyCache.get(key);
+  if (cached && cached.expires > Date.now()) return cached.result;
+  if (countyCache.size >= 1000) countyCache.delete(countyCache.keys().next().value!);
+  const entry = {expires:Date.now()+24*60*60*1000,result:Promise.resolve<string|null>(null)};
+  entry.result = containingCounty(placeLayer, countyLayer, geoid).then(value => { if (!value) entry.expires=Date.now()+60000; return value; }).catch(() => {entry.expires=Date.now()+60000;return null;});
+  countyCache.set(key,entry);return entry.result;
 }
 
 export async function contextForAddress(match: CensusMatch): Promise<PlaceContext> {
