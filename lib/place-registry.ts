@@ -79,7 +79,9 @@ export async function contextForPlaces(ids: string[], precision: PlaceContext["p
   const authorities = db.prepare(`SELECT id,name,level,verification FROM authorities WHERE place_id IN (${allSlots})`).all(...allIds) as PlaceContext["authorities"];
   const context = { places: all, relations, authorities, unresolved: [...unresolved], precision };
   if (precision === "community" && enrichCounty) {
-    for (const place of all.filter(p => keys.includes(p.id) && ["cdp", "municipality"].includes(p.kind))) {
+    const selectedBoundaries=all.filter(p => keys.includes(p.id) && ["cdp", "municipality"].includes(p.kind));
+    if(selectedBoundaries.length>1) context.unresolved.push({layer:"County boundary",geoid:"",name:"Choose one community or use an address to resolve county service areas."});
+    for (const place of selectedBoundaries.length===1?selectedBoundaries:[]) {
       if (relations.some(r => r.child_id === place.id && r.relation === "contained_by" && all.some(p => p.id === r.parent_id && p.kind === "county"))) continue;
       const layer = db.prepare("SELECT p.geoid,d.url FROM places p JOIN datasets d ON d.id=p.dataset_id WHERE p.id=?").get(place.id) as {geoid:string;url:string};
       const countyLayer = db.prepare("SELECT d.url FROM places p JOIN datasets d ON d.id=p.dataset_id WHERE p.kind='county' LIMIT 1").get() as {url:string} | undefined;

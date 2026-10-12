@@ -6,7 +6,7 @@ import type { ProcedureCoverage } from "@/lib/procedure-coverage";
 import type { PlaceContext } from "@/lib/place-registry";
 import { LocationPicker } from "@/components/LocationPicker";
 import { LocationOverview } from "@/components/LocationOverview";
-const statusLabel={"reviewed-procedure":"Reviewed procedure","official-handoff":"Official starting route","review-due":"Review due","coverage-gap":"Coverage gap"};
+const statusLabel:Record<string,string>={"reviewed-procedure":"Reviewed procedure","official-handoff":"Official starting route","review-due":"Review due","coverage-gap":"Coverage gap"};
 export function CoverageExplorer() {
   const [state,setState]=useState("");const [placeIds,setPlaceIds]=useState<string[]>([]);const [topics,setTopics]=useState<ProcedureCoverage>([]);const [context,setContext]=useState<PlaceContext>();const [error,setError]=useState("");const [loading,setLoading]=useState(true);const [pickerKey,setPickerKey]=useState(0);
   useEffect(()=>{const controller=new AbortController();

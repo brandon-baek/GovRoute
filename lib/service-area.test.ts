@@ -1,9 +1,9 @@
 import { describe,expect,it } from "vitest";
 import { fitsServiceArea } from "./service-area";
 import { processJourneys } from "./process-catalog";
-import type { PlaceContext } from "./place-registry";
+import type { PlaceContext, Place } from "./place-registry";
 const guide={...processJourneys[0],serviceArea:"unincorporated" as const,territoryIds:["county"]};
-const community={id:"community",kind:"cdp",government_status:"none",name:"Community",state_code:"CA",state_fips:"06",name_status:"official"};
+const community:Place={id:"community",kind:"cdp",government_status:"none",name:"Community",state_code:"CA",state_fips:"06",name_status:"official"};
 const context={places:[community],relations:[{child_id:"community",parent_id:"county",relation:"contained_by",evidence:"Whole polygon"}],authorities:[],unresolved:[],precision:"community"} as PlaceContext;
 describe("unincorporated service area",()=>{
   it("accepts a selected statistical community only with the relevant county containment",()=>{expect(fitsServiceArea(guide,context,["community"])).toBe(true);});

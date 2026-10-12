@@ -10,7 +10,7 @@ export function GuideResult({ journey, compact = false }: { journey: Journey; co
   const [completed,setCompleted]=useState<string[]>([]);
   const [loadedKey,setLoadedKey]=useState("");
   const storageKey=`govroute-progress:${journey.id}:${journey.reviewedAt}`;
-  useEffect(()=>{let saved:unknown=[];try {saved=JSON.parse(localStorage.getItem(storageKey)??"[]");} catch {} setCompleted(restoreChecklist(journey.steps,saved));setLoadedKey(storageKey);},[storageKey,journey.steps]);
+  useEffect(()=>{const timer=window.setTimeout(()=>{let saved:unknown=[];try {saved=JSON.parse(localStorage.getItem(storageKey)??"[]");} catch {} setCompleted(restoreChecklist(journey.steps,saved));setLoadedKey(storageKey);},0);return ()=>window.clearTimeout(timer);},[storageKey,journey.steps]);
   useEffect(()=>{if(loadedKey===storageKey) try {localStorage.setItem(storageKey,JSON.stringify(completed));} catch {}},[completed,loadedKey,storageKey]);
   const formatted = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(`${journey.reviewedAt}T00:00:00Z`));
   return (
