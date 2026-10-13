@@ -47,6 +47,20 @@ describe("free guidance endpoint", () => {
     expect(body.journey.steps[2].fees).toHaveLength(2);
     expect(body.provenance.processStorage).toBe("bundled-process-catalog");
   });
+  it.each([
+    {message:"I live in California but was born in New York and need a birth certificate"},
+    {message:"I need my birth certificate",state:"CA"},
+    {message:"I need my birth certificate",state:"TX"}
+  ])("does not substitute a residence-state birth record guide: $message / $state",async input=>{
+    const body=await (await POST(request(input))).json();
+    expect(body.status).toBe("matched");expect(body.journey.id).toBe("journey-birth-certificate-start");
+    expect(body.journey.coverageLevel).toBe("official-handoff");expect(body.journey.steps[0].detail).toContain("current residence");
+  });
+  it("prefers the normalized EIN procedure over its older overlapping guide",async()=>{
+    const body=await (await POST(request({message:"I need an EIN for my new LLC",state:"CA"}))).json();
+    expect(body.status).toBe("matched");expect(body.journey.id).toBe("journey-irs-ein");
+    expect(body.journey.steps[1].detail).toContain("entity formation");expect(body.journey.steps[2].fees).toContain("$0 through the IRS.");
+  });
   it("shows a local coverage gap when only a typed SF locality is supplied", async () => {
     const body = await (await POST(request({message:"Report a broken bench",state:"CA",locality:"San Francisco"}))).json();
     expect(body.status).toBe("coverage_gap");

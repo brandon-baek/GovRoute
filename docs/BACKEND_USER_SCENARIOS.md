@@ -23,6 +23,7 @@ The production HTTP suite runs against the real national serving database, with 
 | Apply for a California license versus a Texas license | Explicit process scopes | California publication appears only in the California catalog |
 | Submit a sensitive identifier or oversized request | Privacy guard, bounded input, website response contract | Blocked/413 response with safe, renderable alternatives |
 | Resolve one or several street addresses | Census API adapter, candidate confirmation, no address persistence | Address-range precision remains distinct from parcel certainty |
+| Select the published La Crescenta Library address | Real Census context, server-side address revalidation, private coverage POST | LA County permit route; a forged San Francisco ID is rejected |
 | Encounter a failed address service | Upstream timeout and malformed-data handling | Recoverable error; state/community search stays available |
 | Encounter changed or unavailable local sources | Crawl history, hashes, robots policy, source freshness | Prior successful pages retained; new failures reported separately |
 | Deploy the national backend | Compact projection, immutable asset, hash verification, file tracing | Serving data included; full archive excluded; function budget passes |
@@ -34,5 +35,10 @@ The HTTP suite also requests the homepage, data page, passport guide, moving pag
 The interstate matrix also checks every supported origin/destination pair with and without a vehicle. Texas license applications depend on registration when a vehicle is brought; New York plate/insurance instructions remain tied to the origin. Unknown destinations receive official-directory planning questions without fabricated deadlines. Source review expires after 30 days.
 
 The production suite checks government-catalog paging, guide-group browsing, and invalid catalog input as well. Success on these scenarios measures the implemented behavior; it does not establish complete local-law coverage.
+
+The homepage renders three explicitly illustrative scenarios for cross-state
+moving, local permit coverage, and sourced document steps. Proposed campaign
+copy and guardrails are in `MARKETING_EXAMPLES.md`; these are not testimonials
+or claims of measured campaign performance.
 
 Dependency validation installs the committed lockfile and blocks known high/critical production advisories before a serving release can publish. The complete audit is retained separately, including development tooling. Next.js 16.4.0 and Vitest 5.0.3 remove the runtime and test-runner advisories encountered during this work. A braces/fast-glob development-only advisory remains in the Next ESLint chain; forcing the recommended downgrade would regress the lint toolchain. It is recorded in the audit artifact and is not included in the runtime dependency audit.

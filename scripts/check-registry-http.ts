@@ -160,6 +160,26 @@ try {
     });
     if(test.kind==="cdp") await record(test.name+" property rights remain unresolved","/api/chat",{message:"Can I build an ADU on my property?",placeIds:[place.id]},data=>{assert.equal(data.status,"coverage_gap");assert.equal(data.journey,undefined);assert.equal(data.missing.length,3);});
   }
+  // A published county-library address exercises the user-selected address
+  // bridge. Its mailing name is not treated as jurisdiction evidence.
+  const publicAddress="2809 Foothill Blvd, La Crescenta, CA 91214";
+  await record("public library address resolves to Census context","/api/location/resolve",{address:publicAddress},(data,response)=>{
+    assert.equal(response.status,200);assert.equal(data.status,"matched");
+    assert.ok(response.headers.get("cache-control")?.includes("no-store"));
+    assert.equal(data.candidates[0].context.precision,"address_range");
+    assert.ok(data.candidates[0].context.places.some((p:{geoid?:string;id:string})=>p.id==="census:82:06037"));
+  });
+  await record("address-selected permit revalidates scope","/api/chat",{message:"I need a building permit",state:"CA",locationAddress:publicAddress},data=>{
+    assert.equal(data.status,"matched");assert.equal(data.journey.id,"journey-la-county-building-permit");
+  });
+  await record("address coverage uses private POST","/api/coverage",{state:"CA",locationAddress:publicAddress},(data,response)=>{
+    assert.equal(response.status,200);assert.equal(data.context.precision,"address_range");
+    assert.ok(response.headers.get("cache-control")?.includes("private"));
+    assert.equal(data.topics.find((row:{id:string})=>row.id==="building_permit").status,"reviewed-procedure");
+  });
+  await record("address cannot certify a forged city selection","/api/chat",{message:"I need a building permit",state:"CA",locationAddress:publicAddress,placeIds:[sf.id]},data=>{
+    assert.equal(data.status,"clarify");assert.equal(data.journey,undefined);
+  });
   await record("birth records follow birth location, not residence","/api/chat",{message:"I live in California but was born in New York and need a birth certificate"},data=>{
     assert.equal(data.status,"matched");assert.equal(data.journey.id,"journey-birth-certificate-start");assert.equal(data.journey.coverageLevel,"official-handoff");assert.ok(data.journey.steps[0].detail.includes("current residence"));
   });
@@ -172,6 +192,7 @@ try {
   });
   for (const page of ["/","/data","/guides/apply-for-or-renew-a-passport","/moving"]) {
     const response=await fetch(base+page);assert.equal(response.status,200,"Website page "+page);
+    if(page==="/")assert.ok((await response.text()).includes("Illustrative scenarios, not testimonials"),"Homepage scenarios must render");
   }
   for (const [slug,marker] of [
     ["transfer-an-out-of-state-license-to-texas","Transfer an out-of-state"],

@@ -83,7 +83,10 @@ export async function POST(request: NextRequest) {
     const locations = statesInText(body.message);
     const federalPassport = /\bpassport\b/i.test(body.message);
     const independentRecordTask=taskTopic(body.message)==="birth_certificate";
-    const location = body.state ?? contextStates[0] ?? locations[0]?.code;
+    // The location picker describes the user's current area, not the issuing
+    // jurisdiction of a birth record. Until that is captured separately, the
+    // official birth-record handoff must not inherit a residence-state boost.
+    const location = independentRecordTask ? undefined : body.state ?? contextStates[0] ?? locations[0]?.code;
     const directStateTask = Boolean(location) && (
       (/\blicense\b/i.test(body.message) && /\b(transfer|get|apply|need)\b/i.test(body.message))
       || (/\bplates\b/i.test(body.message) && /\b(surrender|return)\b/i.test(body.message))
@@ -119,12 +122,17 @@ export async function POST(request: NextRequest) {
     const topicById=new Map(processPublications.map(item=>[item.journey.id,item.topic]));
     const transferTask=/\b(transfer|out.of.state|new.resident|mov(?:e|ed|ing))\b/i.test(body.message);
     const topicRecords=(topic ? records.filter(journey=>!topicById.has(journey.id) || topicById.get(journey.id)===topic) : records)
+      .filter(journey=>!independentRecordTask || journey.jurisdiction==="federal")
       .filter(journey=>transferTask || !["journey-ca-new-resident","journey-tx-license-transfer"].includes(journey.id));
-    let matches = retrieveJourneys(body.message, 8, topicRecords, location, scopedIds);
+    const publishedMatches=retrieveJourneys(body.message,8,topicRecords.filter(journey=>topicById.has(journey.id)),location,scopedIds);
+    // A confident task-scoped, reviewed publication takes precedence over an
+    // older overlapping guide. Fall back only when the publication does not
+    // match the requested task; do not manufacture broader catalog coverage.
+    let matches = classifyRetrieval(publishedMatches)==="matched" ? publishedMatches : retrieveJourneys(body.message, 8, topicRecords, location, scopedIds);
     // Legacy local guides use names rather than stable jurisdiction IDs. Until
     // migrated, they must not be certified by a free-text postal/community name.
     const confirmedLocality = context?.places.find((place) => place.kind === "municipality" && place.government_status === "active")?.name;
-    const discoveredMatches = retrieveDiscoveredGuides(body.message, 6, location, confirmedLocality);
+    const discoveredMatches = independentRecordTask ? [] : retrieveDiscoveredGuides(body.message, 6, location, confirmedLocality);
     let router: "graph" | "graph+ai" = "graph";
     if (classifyRetrieval(matches) === "clarify" && consumeAIRoute()) {
       try {
@@ -144,7 +152,8 @@ export async function POST(request: NextRequest) {
 
     const classification = classifyRetrieval(matches);
     const bestDiscovered = discoveredMatches[0];
-    const useDiscovered = Boolean(bestDiscovered && (classification !== "matched" || bestDiscovered.score > (matches[0]?.score ?? 0)));
+    const reviewedProcessMatch=classification==="matched" && topicById.has(matches[0]?.journey.id);
+    const useDiscovered = Boolean(bestDiscovered && !reviewedProcessMatch && (classification !== "matched" || bestDiscovered.score > (matches[0]?.score ?? 0)));
     // Only the selected route can require location. A weaker state discovery
     // must not interrupt a well-matched federal passport pathway.
     const selectedJurisdiction = useDiscovered ? bestDiscovered.guide.jurisdiction : matches[0]?.journey.jurisdiction;

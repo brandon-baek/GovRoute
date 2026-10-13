@@ -26,3 +26,11 @@ The normalized catalog contains source-checked procedures and separately labeled
 official handoffs. Neither the national place inventory nor the tested cohort
 establishes complete nationwide procedure coverage. Exact property decisions
 still require parcel, zoning, recorded restrictions, and applicable legal review.
+
+Birth-record chat requests use the national issuing-office handoff rather than
+inferring a record office from the current-area picker or a residence-state name.
+Existing state record guides remain directly browsable, but selecting one in
+chat requires a future, distinct issuing-jurisdiction input and scope review.
+Confident, scoped process-publication matches take precedence over older
+overlapping guides and unreviewed crawler discoveries. Older guides remain a
+fallback when a published route does not match the task.

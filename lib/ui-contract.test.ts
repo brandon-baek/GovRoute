@@ -4,10 +4,18 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { readFileSync } from "node:fs";
 import { GuideResult } from "@/components/GuideResult";
 import { LocationOverview } from "@/components/LocationOverview";
+import { ExampleScenarios } from "@/components/ExampleScenarios";
 import { processJourneys } from "@/lib/process-catalog";
 import type { PlaceContext } from "@/lib/place-registry";
 
 describe("user-facing evidence and checklist contract",()=>{
+  it("connects illustrative examples to usable routes without special town promotion",()=>{
+    const html=renderToStaticMarkup(createElement(ExampleScenarios));
+    expect(html).toContain("Illustrative scenarios, not testimonials");
+    expect(html).toContain('href="/moving"');expect(html).toContain('href="/data#coverage"');
+    expect(html).toContain('href="/guides/apply-for-or-renew-a-passport"');
+    expect(html).toContain("Coverage gaps");expect(html).not.toContain("La Crescenta");
+  });
   it("distinguishes official handoffs from complete procedures",()=>{
     const journey=processJourneys.find(j=>j.id==="journey-birth-certificate-start")!;
     const html=renderToStaticMarkup(createElement(GuideResult,{journey}));

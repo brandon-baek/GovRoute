@@ -23,8 +23,8 @@ async function coverage(request:NextRequest,input:unknown) {
       if(matches.length!==1)return NextResponse.json({message:"Confirm a single address using the location lookup."},{status:409,headers});
       context=await contextForAddress(matches[0]);
     }
-    if(id && !context?.places.some(p=>p.id===id)) return NextResponse.json({message:"Place not found."},{status:404});
-    if(state && context?.places.some(p=>p.state_code && p.state_code!==state)) return NextResponse.json({message:"The place and state differ."},{status:400});
+    if(id && !context?.places.some(p=>p.id===id)) return NextResponse.json({message:"Place not found."},{status:404,headers});
+    if(state && context?.places.some(p=>p.state_code && p.state_code!==state)) return NextResponse.json({message:"The place and state differ."},{status:400,headers});
     const location=state??context?.places.find(p=>p.state_code)?.state_code??undefined;
     const selected=locationAddress?context?.places.map(p=>p.id)??[]:id?[id]:[];
     const catalog=await publishedProcesses(location,publicationPlaceIds(context,selected),context);
