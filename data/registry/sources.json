@@ -29,6 +29,60 @@
       "name": "San Francisco 311",
       "level": "municipal",
       "evidence_url": "https://www.sf.gov/report-damaged-public-property"
+    },
+    {
+      "id": "authority:la-public-works",
+      "name": "Los Angeles County Public Works",
+      "level": "county",
+      "evidence_url": "https://permits.lacounty.gov/permits/building-and-safety/"
+    },
+    {
+      "id": "authority:la-planning",
+      "name": "Los Angeles County Planning",
+      "level": "county",
+      "evidence_url": "https://planning.lacounty.gov/how-do-i/find-my-zoning/"
+    },
+    {
+      "id": "authority:la-cleanla",
+      "name": "Los Angeles County Public Works \u2014 CleanLA",
+      "level": "county",
+      "evidence_url": "https://cleanla.lacounty.gov/2026/09/21/keeping-la-county-clean/"
+    },
+    {
+      "id": "authority:la-recorder",
+      "name": "Los Angeles County Registrar-Recorder/County Clerk",
+      "level": "county",
+      "evidence_url": "https://www.lavote.gov/home/recorder/real-estate-records/real-estate-records-request/mail-request"
+    },
+    {
+      "id": "authority:king-permitting",
+      "name": "King County Local Services",
+      "level": "county",
+      "evidence_url": "https://kingcounty.gov/en/dept/local-services/certificates-permits-licenses/permits/permits-inspections-codes-buildings-land-use/permit-forms-application-materials/submit-permits"
+    },
+    {
+      "id": "authority:king-roads",
+      "name": "King County Road Services",
+      "level": "county",
+      "evidence_url": "https://kingcounty.gov/en/dept/local-services/transit-transportation-roads/roads-and-bridges/road-services/maintenance/pothole-repair"
+    },
+    {
+      "id": "authority:usagov",
+      "name": "USAGov",
+      "level": "federal",
+      "evidence_url": "https://www.usa.gov/register-to-vote"
+    },
+    {
+      "id": "authority:irs",
+      "name": "Internal Revenue Service",
+      "level": "federal",
+      "evidence_url": "https://www.irs.gov/businesses/small-businesses-self-employed/get-an-employer-identification-number"
+    },
+    {
+      "id": "authority:vote-gov",
+      "name": "Vote.gov",
+      "level": "federal",
+      "evidence_url": "https://vote.gov/register/north-dakota"
     }
   ],
   "scopes": [
@@ -72,6 +126,100 @@
       "role": "service_provider",
       "evidence_url": "https://www.sf.gov/report-damaged-public-property",
       "reviewed_at": "2026-10-11"
+    },
+    {
+      "authority_id": "authority:la-public-works",
+      "geoid": "06037",
+      "kind": "county",
+      "topic": "building_permit",
+      "role": "service_provider",
+      "evidence_url": "https://permits.lacounty.gov/permits/building-and-safety/",
+      "reviewed_at": "2026-10-12"
+    },
+    {
+      "authority_id": "authority:la-planning",
+      "geoid": "06037",
+      "kind": "county",
+      "topic": "property",
+      "role": "service_provider",
+      "evidence_url": "https://planning.lacounty.gov/how-do-i/find-my-zoning/",
+      "reviewed_at": "2026-10-12"
+    },
+    {
+      "authority_id": "authority:la-cleanla",
+      "geoid": "06037",
+      "kind": "county",
+      "topic": "public_property_repair",
+      "role": "service_provider",
+      "evidence_url": "https://cleanla.lacounty.gov/2026/09/21/keeping-la-county-clean/",
+      "reviewed_at": "2026-10-12"
+    },
+    {
+      "authority_id": "authority:la-recorder",
+      "geoid": "06037",
+      "kind": "county",
+      "topic": "property",
+      "role": "service_provider",
+      "evidence_url": "https://www.lavote.gov/home/recorder/real-estate-records/real-estate-records-request/mail-request",
+      "reviewed_at": "2026-10-12"
+    },
+    {
+      "authority_id": "authority:king-permitting",
+      "geoid": "53033",
+      "kind": "county",
+      "topic": "building_permit",
+      "role": "service_provider",
+      "evidence_url": "https://kingcounty.gov/en/dept/local-services/certificates-permits-licenses/permits/permits-inspections-codes-buildings-land-use/permit-forms-application-materials/submit-permits",
+      "reviewed_at": "2026-10-12"
+    },
+    {
+      "authority_id": "authority:king-roads",
+      "geoid": "53033",
+      "kind": "county",
+      "topic": "public_property_repair",
+      "role": "service_provider",
+      "evidence_url": "https://kingcounty.gov/en/dept/local-services/transit-transportation-roads/roads-and-bridges/road-services/maintenance/pothole-repair",
+      "reviewed_at": "2026-10-12"
+    },
+    {
+      "authority_id": "authority:usagov",
+      "territory_id": "country:US",
+      "topic": "voter_registration",
+      "role": "service_provider",
+      "evidence_url": "https://www.usa.gov/register-to-vote",
+      "reviewed_at": "2026-10-12"
+    },
+    {
+      "authority_id": "authority:usagov",
+      "territory_id": "country:US",
+      "topic": "birth_certificate",
+      "role": "service_provider",
+      "evidence_url": "https://www.usa.gov/birth-certificate",
+      "reviewed_at": "2026-10-12"
+    },
+    {
+      "authority_id": "authority:irs",
+      "territory_id": "country:US",
+      "topic": "business_tax_id",
+      "role": "service_provider",
+      "evidence_url": "https://www.irs.gov/businesses/small-businesses-self-employed/get-an-employer-identification-number",
+      "reviewed_at": "2026-10-12"
+    },
+    {
+      "authority_id": "authority:usagov",
+      "territory_id": "country:US",
+      "topic": "driver_license",
+      "role": "service_provider",
+      "evidence_url": "https://www.usa.gov/state-motor-vehicle-services",
+      "reviewed_at": "2026-10-12"
+    },
+    {
+      "authority_id": "authority:vote-gov",
+      "state_code": "ND",
+      "topic": "voter_registration",
+      "role": "service_provider",
+      "evidence_url": "https://vote.gov/register/north-dakota",
+      "reviewed_at": "2026-10-12"
     }
   ],
   "sources": [
@@ -109,7 +257,7 @@
       "id": "passport-ages-16-17",
       "authority_id": "authority:state-department",
       "topic": "passport",
-      "title": "Passport applications for ages 16–17",
+      "title": "Passport applications for ages 16\u201317",
       "url": "https://travel.state.gov/en/passports/apply/child/16-17-year-old.html",
       "kind": "procedure",
       "reviewed_at": "2026-10-08",
@@ -233,6 +381,126 @@
       "topic": "public_property_repair",
       "kind": "procedure",
       "reviewed_at": "2026-10-11",
+      "freshness_days": 30
+    },
+    {
+      "id": "la-county-building-permit",
+      "authority_id": "authority:la-public-works",
+      "topic": "building_permit",
+      "title": "Apply for a building permit in unincorporated Los Angeles County",
+      "url": "https://permits.lacounty.gov/permits/building-and-safety/",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-12",
+      "freshness_days": 30
+    },
+    {
+      "id": "la-county-zoning-lookup",
+      "authority_id": "authority:la-planning",
+      "topic": "property",
+      "title": "Find zoning in unincorporated Los Angeles County",
+      "url": "https://planning.lacounty.gov/how-do-i/find-my-zoning/",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-12",
+      "freshness_days": 30
+    },
+    {
+      "id": "la-county-illegal-dumping",
+      "authority_id": "authority:la-cleanla",
+      "topic": "public_property_repair",
+      "title": "Report illegal dumping in unincorporated Los Angeles County",
+      "url": "https://cleanla.lacounty.gov/2026/09/21/keeping-la-county-clean/",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-12",
+      "freshness_days": 30
+    },
+    {
+      "id": "la-county-recorded-document",
+      "authority_id": "authority:la-recorder",
+      "topic": "property",
+      "title": "Request recorded real-estate documents in Los Angeles County",
+      "url": "https://www.lavote.gov/home/recorder/real-estate-records/real-estate-records-request/mail-request",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-12",
+      "freshness_days": 30
+    },
+    {
+      "id": "king-county-building-permit",
+      "authority_id": "authority:king-permitting",
+      "topic": "building_permit",
+      "title": "Apply for a building permit in unincorporated King County",
+      "url": "https://kingcounty.gov/en/dept/local-services/certificates-permits-licenses/permits/permits-inspections-codes-buildings-land-use/permit-forms-application-materials/submit-permits",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-12",
+      "freshness_days": 30
+    },
+    {
+      "id": "king-county-pothole",
+      "authority_id": "authority:king-roads",
+      "topic": "public_property_repair",
+      "title": "Report a pothole in unincorporated King County",
+      "url": "https://kingcounty.gov/en/dept/local-services/transit-transportation-roads/roads-and-bridges/road-services/maintenance/pothole-repair",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-12",
+      "freshness_days": 30
+    },
+    {
+      "id": "voter-registration-start",
+      "authority_id": "authority:usagov",
+      "topic": "voter_registration",
+      "title": "Find your voter registration route",
+      "url": "https://www.usa.gov/register-to-vote",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-12",
+      "freshness_days": 30
+    },
+    {
+      "id": "birth-certificate-start",
+      "authority_id": "authority:usagov",
+      "topic": "birth_certificate",
+      "title": "Find the office for your birth certificate",
+      "url": "https://www.usa.gov/birth-certificate",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-12",
+      "freshness_days": 30
+    },
+    {
+      "id": "irs-ein",
+      "authority_id": "authority:irs",
+      "topic": "business_tax_id",
+      "title": "Get an Employer Identification Number from the IRS",
+      "url": "https://www.irs.gov/businesses/small-businesses-self-employed/get-an-employer-identification-number",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-12",
+      "freshness_days": 30
+    },
+    {
+      "id": "driver-license-start",
+      "authority_id": "authority:usagov",
+      "topic": "driver_license",
+      "title": "Find your driver license application or renewal route",
+      "url": "https://www.usa.gov/state-motor-vehicle-services",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-12",
+      "freshness_days": 30
+    },
+    {
+      "id": "nd-voting-start",
+      "authority_id": "authority:vote-gov",
+      "topic": "voter_registration",
+      "title": "Check voting requirements in North Dakota",
+      "url": "https://vote.gov/register/north-dakota",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-12",
+      "freshness_days": 30
+    },
+    {
+      "id": "irs-ein-formation",
+      "authority_id": "authority:irs",
+      "topic": "business_tax_id",
+      "title": "EIN prerequisites and alternative routes",
+      "url": "https://www.irs.gov/businesses/employer-identification-number",
+      "kind": "procedure",
+      "reviewed_at": "2026-10-12",
       "freshness_days": 30
     }
   ]

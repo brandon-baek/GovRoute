@@ -22,13 +22,13 @@ assert.equal((await relevantLegalSources([statistical.id], "property")).length, 
 assert.equal((await relevantLegalSources([statistical.id], "passport")).length, 7);
 const texasProcesses = await publishedProcesses("TX");
 assert.equal(texasProcesses.storage, "registry-process-catalog");
-assert.deepEqual(texasProcesses.journeys.map(journey=>journey.id).sort(), ["journey-passport-apply","journey-tx-license-transfer"]);
+assert.deepEqual(texasProcesses.journeys.map(journey=>journey.id).sort(), ["journey-birth-certificate-start","journey-driver-license-start","journey-irs-ein","journey-passport-apply","journey-tx-license-transfer","journey-voter-registration-start"]);
 const sf=db.prepare("SELECT id FROM places WHERE geoid='0667000' AND kind='municipality'").get() as {id:string};
 assert.ok(sf, "San Francisco's reviewed municipal scope must resolve in the real dataset");
 assert.ok((await publishedProcesses("CA",[sf.id])).journeys.some(journey=>journey.id==="journey-sf-damaged-public-property"));
 assert.ok(!(await publishedProcesses("CA",[statistical.id])).journeys.some(journey=>journey.jurisdiction==="local"));
-assert.equal((await publishedProcesses("CA")).journeys.length, 2);
-assert.equal((db.prepare("SELECT count(*) AS count FROM process_definitions WHERE review_status='reviewed'").get() as { count: number }).count, 5);
+assert.equal((await publishedProcesses("CA")).journeys.length, 6);
+assert.equal((db.prepare("SELECT count(*) AS count FROM process_definitions WHERE review_status='reviewed'").get() as { count: number }).count, 16);
 assert.ok((db.prepare("SELECT count(*) AS count FROM process_step_sources").get() as { count: number }).count > 9);
 assert.equal(db.pragma("integrity_check", { simple: true }), "ok");
 console.log(JSON.stringify({ placeCount: coverage.placeCount, sourceCount: coverage.sourceCount, bytes: statSync("data/govroute-locations.db").size, tests: "search, unofficial labels, statistical government gate, topic-scoped sources, integrity" }));

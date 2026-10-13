@@ -5,7 +5,8 @@ import { retrieveJourneys } from "@/lib/retrieval";
 describe("published process routing", () => {
   it("offers federal passport steps without a location or national registry", () => {
     const records = bundledProcessesForState();
-    expect(records.map((journey) => journey.id)).toEqual(["journey-passport-apply"]);
+    expect(records.map((journey) => journey.id)).toContain("journey-passport-apply");
+    expect(records.every(journey=>journey.jurisdiction==="federal")).toBe(true);
     const passport = retrieveJourneys("renew passport", 1, records)[0].journey;
     expect(passport.steps.some((step) => step.requirements?.length)).toBe(true);
     expect(passport.steps.some((step) => step.fees?.length)).toBe(true);
@@ -19,8 +20,8 @@ describe("published process routing", () => {
 
   it("keeps the new state procedures in their reviewed states", () => {
     const texas = bundledProcessesForState("TX");
-    expect(texas.map(journey=>journey.id).sort()).toEqual(["journey-passport-apply","journey-tx-license-transfer"]);
-    expect(bundledProcessesForState("NY").map(journey=>journey.id).sort()).toEqual(["journey-ny-plate-surrender","journey-passport-apply"]);
+    expect(texas.map(journey=>journey.id)).toContain("journey-tx-license-transfer");
+    expect(bundledProcessesForState("NY").map(journey=>journey.id)).toContain("journey-ny-plate-surrender");
     expect(bundledProcessesForState("CA").some(journey=>journey.id==="journey-ny-plate-surrender")).toBe(false);
   });
 

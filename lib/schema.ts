@@ -10,7 +10,9 @@ export const sourceSchema = z.object({
   publisher: z.string(),
   lastChecked: z.string(),
   retrievedAt: z.string().optional(),
-  contentHash: z.string().optional()
+  contentHash: z.string().optional(),
+  indexStatus: z.enum(["indexed", "unchanged", "unavailable", "not-checked"]).optional(),
+  indexCheckedAt: z.string().nullable().optional()
 });
 
 export const journeyStepSchema = z.object({
@@ -35,6 +37,10 @@ export const journeySchema = z.object({
   jurisdiction: jurisdictionSchema,
   state: z.string().regex(/^[A-Z]{2}$/).optional(),
   locality: z.string().max(120).optional(),
+  serviceArea: z.enum(["entire-territory", "unincorporated"]).optional(),
+  coverageLevel: z.enum(["procedure", "official-handoff"]).optional(),
+  scopeNote: z.string().optional(),
+  reviewNote: z.string().optional(),
   territoryIds: z.array(z.string().min(1).max(150)).max(60).optional(),
   audience: z.array(z.string()),
   aliases: z.array(z.string()),
@@ -87,6 +93,7 @@ export type GraphNode = z.infer<typeof graphNodeSchema>;
 export type GraphEdge = z.infer<typeof graphEdgeSchema>;
 
 export const chatRequestSchema = z.object({
+  locationAddress: z.string().trim().min(8).max(240).optional(),
   placeIds: z.array(z.string().min(1).max(150)).max(60).optional(),
   message: z.string().trim().min(3).max(600),
   state: z.string().regex(/^[A-Z]{2}$/).optional(),

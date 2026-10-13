@@ -40,22 +40,22 @@ export function tokenize(value: string) {
 }
 
 function occurrences(haystack: string, needle: string) {
-  if (!needle || !haystack.includes(needle)) return 0;
+  if (!needle || !haystack.replace(/[’']/g, "").split(/[^a-z0-9-]+/).includes(needle)) return 0;
   return haystack === needle ? 2 : 1;
 }
 
 function scoreJourney(query: string, journey: Journey): RetrievalMatch {
-  const normalized = query.toLowerCase().replace(/[’']/g, "'");
+  const normalized = query.toLowerCase().replace(/[’']/g, "");
   const terms = tokenize(query);
   const title = journey.title.toLowerCase();
   const summary = journey.summary.toLowerCase();
   const category = journey.category.toLowerCase();
-  const aliases = journey.aliases.map((alias) => alias.toLowerCase());
+  const aliases = journey.aliases.map((alias) => alias.toLowerCase().replace(/[’']/g,""));
   let score = 0;
   const matchedTerms = new Set<string>();
 
   for (const alias of aliases) {
-    if (normalized.includes(alias)) {
+    if (new RegExp("(^|[^a-z0-9])" + alias.replace(/[.*+?^${}()|[\]\\]/g,"\\$&") + "($|[^a-z0-9])").test(normalized)) {
       score += 18 + Math.min(alias.split(/\s+/).length * 2, 8);
       matchedTerms.add(alias);
     }
@@ -73,10 +73,6 @@ function scoreJourney(query: string, journey: Journey): RetrievalMatch {
     }
   }
 
-  const saysCalifornia = /\b(california|ca|calif)\b/i.test(query);
-  if (saysCalifornia && journey.jurisdiction !== "federal") score += 7;
-  if (saysCalifornia && journey.jurisdiction === "federal") score -= 2;
-
   return { journey, score, matchedTerms: [...matchedTerms] };
 }
 
@@ -85,6 +81,7 @@ export function retrieveJourneys(query: string, limit = 4, records: Journey[] = 
   return records
     .filter((journey) => matchesLocation(journey, location, undefined, placeIds))
     .map((journey) => scoreJourney(query, journey))
+    .map(match=>({...match,score:match.score>0 && location && match.journey.state===location ? match.score+8 : match.score}))
     .filter((match) => match.score > 0)
     .sort((a, b) => b.score - a.score || a.journey.title.localeCompare(b.journey.title))
     .slice(0, limit);

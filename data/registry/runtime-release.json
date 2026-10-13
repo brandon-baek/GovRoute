@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "sha256": "722c268daf88830499a9168acde6de5e01cd4532e5abc25f01a698183775e337",
-  "bytes": 294445056,
-  "compressedBytes": 50373675,
-  "archiveBytes": 487317504,
-  "archiveCompressedBytes": 91015399,
-  "archiveSha256": "b5f2a0770f8ef5b9b7d8788fde3346f18c9f8c40123c18b3588bf11dc7fea705",
+  "sha256": "adc9e7d40293281e99a2f29f7da441e6f991f9fa093ceccd4c3524663b6d49dd",
+  "bytes": 297078784,
+  "compressedBytes": 51032292,
+  "archiveBytes": 489385984,
+  "archiveCompressedBytes": 91675965,
+  "archiveSha256": "a5bc1a8560c00e4f3d1bd15182a5d1b48231b4e389c6f18f0061cc65666aa1c8",
   "placeCount": 277669,
-  "sourceCount": 16,
-  "reviewedProcesses": 5,
-  "generatedAt": "2026-10-11T19:23:40.350856+00:00",
-  "url": "https://github.com/brandon-baek/Project-Gov/releases/download/registry-1e84c9942217bcf6ab842a94ce91147fb7be150e/govroute-runtime.db.gz"
+  "sourceCount": 28,
+  "reviewedProcesses": 16,
+  "generatedAt": "2026-10-13T17:16:54.991211+00:00",
+  "url": "https://github.com/brandon-baek/Project-Gov/releases/download/registry-ab07d7e5e815cbba4dd3a9944b7253c7e470470c/govroute-runtime.db.gz"
 }

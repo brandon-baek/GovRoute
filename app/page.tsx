@@ -2,6 +2,7 @@ import Link from "next/link";
 import { GuideSearch } from "@/components/GuideSearch";
 import { journeys } from "@/data/curated/journeys";
 import { ArrowIcon } from "@/components/icons";
+import { ExampleScenarios } from "@/components/ExampleScenarios";
 
 const starts = [
   { number: "01", title: "Passports & identity", detail: "Apply, renew, replace, or update a document.", href: "/guides/apply-for-or-renew-a-passport" },
@@ -27,6 +28,7 @@ export default function HomePage() {
       <div className="section-heading"><div><p className="section-label">A place to start</p><h2>Everyday tasks. Clear routes.</h2></div><Link href="/guides">Browse pathways <ArrowIcon /></Link></div>
       <div className="hub-starts">{starts.map((item) => <Link key={item.number} href={item.href}><span>{item.number}</span><h3>{item.title}</h3><p>{item.detail}</p><span className="hub-starts__action">Find a pathway <ArrowIcon /></span></Link>)}</div>
     </section>
+    <ExampleScenarios />
     <section className="hub-method shell"><p className="section-label">From a question to a next step</p><div>
       <article><span>01 / Find your route</span><h2>The process that fits.</h2><p>Your task and location help identify the relevant agency and pathway.</p></article>
       <article><span>02 / Get prepared</span><h2>Know what you’ll need.</h2><p>Follow ordered steps and check the required documents, eligibility, fees, and timing at the official source.</p></article>

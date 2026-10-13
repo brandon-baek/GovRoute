@@ -1,9 +1,17 @@
+"use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { restoreChecklist, toggleStep } from "@/lib/checklist";
 import type { Journey } from "@/lib/schema";
 import { jurisdictionLabel } from "@/lib/jurisdictions";
 import { CheckIcon, ExternalIcon } from "@/components/icons";
 
 export function GuideResult({ journey, compact = false }: { journey: Journey; compact?: boolean }) {
+  const [completed,setCompleted]=useState<string[]>([]);
+  const [loadedKey,setLoadedKey]=useState("");
+  const storageKey=`govroute-progress:${journey.id}:${journey.reviewedAt}`;
+  useEffect(()=>{const timer=window.setTimeout(()=>{let saved:unknown=[];try {saved=JSON.parse(localStorage.getItem(storageKey)??"[]");} catch {} setCompleted(restoreChecklist(journey.steps,saved));setLoadedKey(storageKey);},0);return ()=>window.clearTimeout(timer);},[storageKey,journey.steps]);
+  useEffect(()=>{if(loadedKey===storageKey) try {localStorage.setItem(storageKey,JSON.stringify(completed));} catch {}},[completed,loadedKey,storageKey]);
   const formatted = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(`${journey.reviewedAt}T00:00:00Z`));
   return (
     <article className={compact ? "guide-result guide-result--compact" : "guide-result"}>
@@ -16,14 +24,21 @@ export function GuideResult({ journey, compact = false }: { journey: Journey; co
         <div className="verified-stamp"><CheckIcon /> {journey.reviewStatus === "review-due" ? "Review due · Last checked" : "Sources checked"} {formatted}</div>
       </header>
 
+      {journey.coverageLevel==="official-handoff" && <div className="coverage-label"><strong>Official starting route</strong><p>The receiving agency still needs to confirm its local requirements. This checklist is a handoff, with source-checked navigation steps.</p></div>}
+      {journey.scopeNote && <p className="scope-note">{journey.scopeNote}</p>}
+      {journey.reviewNote && <p className="caution" role="status">{journey.reviewNote}</p>}
+      {!compact && <div className="checklist-progress"><div><strong>{completed.length} of {journey.steps.length} steps complete</strong><span>Progress stays in this browser. No address or identification numbers are saved.</span></div><progress value={completed.length} max={journey.steps.length} aria-label="Checklist progress" /><button type="button" onClick={()=>window.print()}>Print checklist</button></div>}
+
       {journey.eligibility?.length ? <details className="process-eligibility"><summary>Does this route fit my situation?</summary>{journey.eligibility.map((item) => <p key={item}>{item}</p>)}</details> : null}
 
       <ol className="steps-list">
         {journey.steps.map((step, index) => (
-          <li key={step.id}>
+          <li key={step.id} className={completed.includes(step.id)?"step-complete":""}>
             <span className="step-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
             <div>
               <h3>{step.title}</h3>
+              {!compact && <label className="step-completion"><input type="checkbox" checked={completed.includes(step.id)} disabled={!completed.includes(step.id) && Boolean(step.dependsOn?.some(id=>!completed.includes(id)))} onChange={()=>setCompleted(old=>toggleStep(journey.steps,old,step.id))} />{completed.includes(step.id)?"Completed":"Mark complete"}</label>}
+              {step.dependsOn?.length ? <p className="step-dependencies">First: {step.dependsOn.map(id=>journey.steps.find(item=>item.id===id)?.title??id).join("; ")}</p> : null}
               <p>{step.detail}</p>
               <dl className="step-facts">
                 {([['Prepare', step.requirements], ['Cost', step.fees], ['Timing', step.deadlines]] as const).map(([label, items]) => items?.length ? <div key={label}><dt>{label}</dt><dd>{items.map((item) => <p key={item}>{item}</p>)}</dd></div> : null)}
@@ -44,12 +59,13 @@ export function GuideResult({ journey, compact = false }: { journey: Journey; co
         <ul>
           {journey.sources.map((source) => (
             <li key={source.id}>
-              <a href={source.url} target="_blank" rel="noreferrer"><span>{source.title}<small>{source.publisher}</small></span><ExternalIcon /></a>
+              <a href={source.url} target="_blank" rel="noreferrer"><span>{source.title}<small>{source.publisher}</small>{source.indexStatus && <small>Index: {source.indexStatus==="not-checked"?"not yet checked":source.indexStatus}{source.indexCheckedAt?" · "+source.indexCheckedAt.slice(0,10):""}</small>}</span><ExternalIcon /></a>
             </li>
           ))}
         </ul>
       </div>
 
+      {journey.sources.some(source=>source.indexStatus) && <p className="privacy-note">Automated indexing and instruction review are separate checks.</p>}
       {!compact && (
         <div className="result-actions">
           {journey.officialAction && <a className="primary-action" href={journey.officialAction.url} target="_blank" rel="noreferrer">{journey.officialAction.label}<ExternalIcon /></a>}

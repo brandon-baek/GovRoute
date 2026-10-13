@@ -10,6 +10,8 @@ import { DiscoveredGuideResult } from "@/components/DiscoveredGuideResult";
 import type { DiscoveredGuide } from "@/lib/discovered-guides";
 import type { LocalResource } from "@/lib/local-resources";
 import { LocationPicker } from "@/components/LocationPicker";
+import { LocationOverview } from "@/components/LocationOverview";
+import type { PlaceContext } from "@/lib/place-registry";
 
 type ApiResponse =
   | { status: "coverage_gap"; title?: string; directoryResources?: LocalResource[]; message: string; steps: string[]; sources: { id: string; title: string; url: string; publisher: string }[]; missing: string[]; scopeNote: string; alternatives: [] }
@@ -28,6 +30,9 @@ export function GuideSearch() {
   const [state, setState] = useState("");
   const [placeIds, setPlaceIds] = useState<string[]>([]);
   const [locationLabel, setLocationLabel] = useState("");
+  const [locationContext,setLocationContext]=useState<PlaceContext>();
+  const [locationAddress,setLocationAddress]=useState<string>();
+  const [pickerKey,setPickerKey]=useState(0);
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState("");
   const [result, setResult] = useState<ApiResponse | null>(null);
@@ -51,7 +56,7 @@ export function GuideSearch() {
         method: "POST",
         signal: controller.signal,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: clean, state: state || undefined, placeIds: placeIds.length ? placeIds : undefined, history: [] })
+        body: JSON.stringify({ message: clean, state: state || undefined, placeIds: placeIds.length ? placeIds : undefined, locationAddress, history: [] })
       });
       const data = (await response.json()) as ApiResponse;
       if (version!==requestVersion.current) return;
@@ -81,10 +86,11 @@ export function GuideSearch() {
         </div>
         <p className="privacy-note">Do not include Social Security, account, passport, or license numbers.</p>
         <div className="location-fields search-location">
-          <label htmlFor="search-state">Where should we look?<select id="search-state" value={state} onChange={(event) => { setState(event.target.value); setPlaceIds([]); setLocationLabel(""); resetLocation(); }}><option value="">Choose a state when needed</option>{states.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}</select></label>
+          <label htmlFor="search-state">Where should we look?<select id="search-state" value={state} onChange={(event) => { setState(event.target.value); setPlaceIds([]); setLocationLabel("");setLocationContext(undefined);setLocationAddress(undefined);setPickerKey(k=>k+1); resetLocation(); }}><option value="">Choose a state when needed</option>{states.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}</select></label>
         </div>
-        <LocationPicker key={state} state={state} onChange={(ids, label, code) => { setPlaceIds(ids); setLocationLabel(label); if (code) setState(code); resetLocation(); }} />
+        <LocationPicker key={pickerKey} state={state} onChange={(ids, label, code,context,address) => { setPlaceIds(ids); setLocationLabel(label);setLocationContext(context);setLocationAddress(address); if (code) setState(code); resetLocation(); }} />
         {locationLabel && <p className="selected-location">Selected area: {locationLabel}</p>}
+        {locationContext && <LocationOverview context={locationContext} />}
       </form>
 
       {!submitted && (
@@ -114,7 +120,7 @@ export function GuideSearch() {
           <DiscoveredGuideResult guide={result.guide} compact />
           <details className="trace-details"><summary>Why this result was selected</summary><p>Your request matched a published government task whose source, task title, page content, and crawl record passed the automated publication checks.</p><Link href={`/guides/${result.guide.slug}`}>Open the permanent guide</Link></details>
         </>}
-        {result?.status === "coverage_gap" && <section className="pathway-gap"><p className="section-label">{result.title ?? "Find the rules for your property"}</p><h2>Start with the right records.</h2><p>{result.message}</p><ol>{result.steps.map((step) => <li key={step}>{step}</li>)}</ol><p>{result.scopeNote}</p>{result.sources.length > 0 && <ul>{result.sources.map((source) => <li key={source.id}><a href={source.url} target="_blank" rel="noreferrer">{source.title} · {source.publisher}</a></li>)}</ul>}{Boolean(result.directoryResources?.length) && <div><h3>Official local starting points</h3><p>These websites match the registered government organization. The procedure and service area still need confirmation.</p><ul>{result.directoryResources?.map(resource=><li key={resource.id}><a href={resource.url} target="_blank" rel="noreferrer">{resource.title} · {resource.placeName}</a><span> · {resource.kind==="indexed_page" ? "Crawled "+resource.retrievedAt.slice(0,10)+"; instructions unreviewed" : "Official registration; procedure unreviewed"}</span>{["unavailable","blocked"].includes(resource.lastCheckStatus) && <span> · Latest automated crawl unavailable</span>}</li>)}</ul></div>}</section>}
+        {result?.status === "coverage_gap" && <section className="pathway-gap"><p className="section-label">{result.title ?? "Find the rules for your property"}</p><h2>Here is the next useful step.</h2><p>{result.message}</p><ol>{result.steps.map((step) => <li key={step}>{step}</li>)}</ol><p>{result.scopeNote}</p><details className="missing-evidence"><summary>What still needs confirmation</summary><ul>{result.missing.map(item=><li key={item}>{item}</li>)}</ul></details>{result.sources.length > 0 && <ul>{result.sources.map((source) => <li key={source.id}><a href={source.url} target="_blank" rel="noreferrer">{source.title} · {source.publisher}</a></li>)}</ul>}{Boolean(result.directoryResources?.length) && <div><h3>Official local starting points</h3><p>These websites match the registered government organization. The procedure and service area still need confirmation.</p><ul>{result.directoryResources?.map(resource=><li key={resource.id}><a href={resource.url} target="_blank" rel="noreferrer">{resource.title} · {resource.placeName}</a><span> · {resource.kind==="indexed_page" ? "Crawled "+resource.retrievedAt.slice(0,10)+"; instructions unreviewed" : "Official registration; procedure unreviewed"}</span>{["unavailable","blocked"].includes(resource.lastCheckStatus) && <span> · Latest automated crawl unavailable</span>}</li>)}</ul></div>}</section>}
         {result && result.status !== "matched" && result.status !== "discovered" && result.status !== "coverage_gap" && (
           <div className={`notice notice--${result.status}`} role={result.status === "error" || result.status === "blocked" ? "alert" : undefined}>
             <p>{result.message}</p>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { censusMatches } from "@/lib/place-context";
+import { resolveAddress } from "@/lib/address-resolver";
 import { contextForAddress } from "@/lib/place-registry";
 import { consumeRequest } from "@/lib/request-limits";
 
@@ -26,13 +26,7 @@ export async function POST(request: NextRequest) {
     }
     const parsed = schema.safeParse(JSON.parse(Buffer.concat(chunks).toString("utf8")));
     if (!parsed.success) return NextResponse.json({ status: "error", message: "Enter a complete US street address." }, { status: 400, headers });
-    const url = new URL("https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress");
-    url.search = new URLSearchParams({ address: parsed.data.address, benchmark: "Public_AR_Current", vintage: "Current_Current", layers: "all", format: "json" }).toString();
-    // Never store/log addresses or send them to the AI router. The official geocoder
-    // receives the address only for this user-requested lookup.
-    const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(12000) });
-    if (!response.ok) throw new Error("upstream");
-    const matches = censusMatches(await response.json());
+    const matches = await resolveAddress(parsed.data.address);
     const candidates = await Promise.all(matches.map(async (match) => ({ matchedAddress: match.matchedAddress, context: await contextForAddress(match) })));
     return NextResponse.json({
       status: matches.length === 1 ? "matched" : matches.length ? "ambiguous" : "not_found",

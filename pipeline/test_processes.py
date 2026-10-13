@@ -20,6 +20,10 @@ class ProcessPublicationTests(unittest.TestCase):
         self.tx = add_census(self.db, {"GEOID":"48","NAME":"Texas","STUSAB":"TX","STATE":"48","FUNCSTAT":"A"}, "state", "fixture", 80)
         self.ny = add_census(self.db, {"GEOID":"36","NAME":"New York","STUSAB":"NY","STATE":"36","FUNCSTAT":"A"}, "state", "fixture", 80)
         self.sf = add_census(self.db, {"GEOID":"0667000","NAME":"San Francisco city","STUSAB":"CA","STATE":"06","FUNCSTAT":"A"}, "municipality", "fixture", 28)
+        self.la = add_census(self.db, {"GEOID":"06037","NAME":"Los Angeles County","STUSAB":"CA","STATE":"06","FUNCSTAT":"A"}, "county", "fixture", 82)
+        self.nd = add_census(self.db, {"GEOID":"38","NAME":"North Dakota","STUSAB":"ND","STATE":"38","FUNCSTAT":"A"}, "state", "fixture", 80)
+        self.wa = add_census(self.db, {"GEOID":"53","NAME":"Washington","STUSAB":"WA","STATE":"53","FUNCSTAT":"A"}, "state", "fixture", 80)
+        self.king = add_census(self.db, {"GEOID":"53033","NAME":"King County","STUSAB":"WA","STATE":"53","FUNCSTAT":"A"}, "county", "fixture", 82)
         load_manifest(self.db, ROOT / "data/registry/sources.json")
         self.db.commit()
         self.manifest = json.loads((ROOT / "data/registry/processes.json").read_text())
@@ -35,14 +39,17 @@ class ProcessPublicationTests(unittest.TestCase):
                 return load_processes(self.db, file)
 
     def test_publishes_sourced_steps_with_explicit_state_and_federal_scopes(self):
-        self.assertEqual(self.publish(), 5)
+        self.assertEqual(self.publish(), 16)
         scopes = dict(self.db.execute("SELECT process_id,territory_id FROM process_publications").fetchall())
         self.assertEqual(scopes, {
             "journey-ca-new-resident": self.state, "journey-passport-apply": "country:US",
             "journey-tx-license-transfer": self.tx, "journey-ny-plate-surrender": self.ny,
             "journey-sf-damaged-public-property": self.sf,
+            **{item["journey"]["id"]: self.la for item in self.manifest["processes"] if item["territory"] == {"geoid":"06037","kind":"county"}},
+            **{item["journey"]["id"]: self.king for item in self.manifest["processes"] if item["territory"] == {"geoid":"53033","kind":"county"}},
+            "journey-voter-registration-start":"country:US", "journey-birth-certificate-start":"country:US", "journey-irs-ein":"country:US", "journey-driver-license-start":"country:US", "journey-nd-voting-start":self.nd,
         })
-        self.assertEqual(self.db.execute("SELECT count(*) FROM process_steps").fetchone()[0], 20)
+        self.assertEqual(self.db.execute("SELECT count(*) FROM process_steps").fetchone()[0], sum(len(item["journey"]["steps"]) for item in self.manifest["processes"]))
         document = json.loads(self.db.execute("SELECT document_json FROM process_publications WHERE process_id='journey-passport-apply'").fetchone()[0])
         self.assertEqual(document["steps"][1]["dependsOn"], ["choose"])
         self.assertTrue(document["steps"][2]["fees"])

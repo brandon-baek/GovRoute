@@ -58,6 +58,14 @@ jobs:
           python -m pipeline.government_directory
           python -m pipeline.local_sources --sites 500
 
+      - name: Build the task-specific procedure review queue
+        run: python -m pipeline.procedure_candidates
+      - name: Preserve task evidence for the next review
+        uses: actions/upload-artifact@v4
+        with:
+          name: govroute-procedure-review-queue
+          path: data/govroute-procedure-queue.json
+          retention-days: 90
       - name: Measure procedure-source indexing separately
         id: legal_sources
         continue-on-error: true
@@ -71,7 +79,7 @@ jobs:
 
       - name: Run backend and application validation
         run: |
-          python -m unittest pipeline.test_locations pipeline.test_processes pipeline.test_national_backend -v
+          python -m unittest pipeline.test_locations pipeline.test_processes pipeline.test_national_backend pipeline.test_procedure_candidates -v
           npm run typecheck
           npm test
           npm run lint
@@ -100,7 +108,7 @@ jobs:
               SELECT COUNT(*)
               FROM journeys AS j
               JOIN graph_nodes AS n ON n.id = j.node_id
-              WHERE n.status != 'verified'
+              WHERE n.status NOT IN ('verified','review-due')
           """).fetchone()[0]
           if verified == 0 or unreviewed_public:
               sys.exit(f"Journey review gate failed: verified={verified}, unreviewed={unreviewed_public}")

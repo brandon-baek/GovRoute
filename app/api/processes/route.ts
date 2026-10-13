@@ -16,12 +16,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ message: "Choose a supported state and a query up to 120 characters." }, { status: 400 });
   }
   try {
-    const context=id ? await contextForPlaces([id]) : undefined;
+    const context=id ? await contextForPlaces([id],"community",[],true) : undefined;
     if(id && !context?.places.some(place=>place.id===id)) return NextResponse.json({message:"Choose an available place."},{status:404});
     const scopeIds=publicationPlaceIds(context,id?[id]:[]);
     const location=state??context?.places.find(place=>place.kind==="state")?.state_code??undefined;
     if(state && context?.places.some(place=>place.state_code && place.state_code!==state)) return NextResponse.json({message:"The place and selected state differ."},{status:400});
-    const catalog = await publishedProcesses(location,scopeIds);
+    const catalog = await publishedProcesses(location,scopeIds,context);
     const journeys = query ? retrieveJourneys(query, 20, catalog.journeys, location, scopeIds).map((match) => match.journey) : catalog.journeys;
     return NextResponse.json({ processes: journeys, storage: catalog.storage, coverage: "Only the explicitly published processes are included." }, { headers: { "Cache-Control": "no-store" } });
   } catch {
