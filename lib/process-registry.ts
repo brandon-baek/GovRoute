@@ -35,7 +35,10 @@ export async function publishedProcesses(state?: string, placeIds: string[] = []
     current.delete(item.journey.id);
     if(id && territories.has(id)) current.set(item.journey.id,{...item.journey,territoryIds:item.journey.jurisdiction==="federal"?undefined:[id]});
   }
-  return { journeys: [...current.values()].filter(journey=>fitsServiceArea(journey,context,placeIds)).map(journey=>{
+  return { journeys: [...current.values()].filter(journey=>fitsServiceArea(journey,context,placeIds)).map(journey=>registrySourceReview(db,journey)), storage: "registry-process-catalog" as const };
+}
+
+function registrySourceReview(db:NonNullable<Awaited<ReturnType<typeof openRegistry>>>,journey:ReturnType<typeof journeySchema.parse>) {
     const checks=journey.sources.map(source=>{
       const row=db.prepare(`SELECT s.id,
         coalesce((SELECT status FROM legal_source_checks c WHERE c.source_id=s.id ORDER BY c.id DESC LIMIT 1),'not-checked') AS status,
@@ -45,6 +48,10 @@ export async function publishedProcesses(state?: string, placeIds: string[] = []
         FROM legal_sources s WHERE s.id=? AND s.url=?`).get(source.id,source.url) as SourceCheck|undefined;
       return row??{id:source.id,status:"not-checked" as const,checkedAt:null};
     });
-    return withSourceFreshness(applySourceChecks(journey,checks));
-  }), storage: "registry-process-catalog" as const };
+  return withSourceFreshness(applySourceChecks(journey,checks));
+}
+
+export async function currentJourneyReview(journey:ReturnType<typeof journeySchema.parse>) {
+  try {const db=await openRegistry();return db?registrySourceReview(db,journey):withSourceFreshness(journey);}
+  catch {return {...withSourceFreshness(journey),reviewStatus:"review-due" as const,reviewNote:"Current source-check status is unavailable. Confirm requirements at the official source."};}
 }

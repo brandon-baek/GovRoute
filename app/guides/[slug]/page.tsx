@@ -7,6 +7,11 @@ import { DiscoveredGuideResult } from "@/components/DiscoveredGuideResult";
 import { discoveredGuides, getDiscoveredGuideBySlug } from "@/lib/discovered-guides";
 import { AdSlot } from "@/components/AdSlot";
 import { siteUrl } from "@/lib/site";
+import { currentJourneyReview } from "@/lib/process-registry";
+
+// Instruction review expiry and source changes must also appear when a person
+// opens a permanent guide, not only when they ask through the chat endpoint.
+export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
   return [...journeys.map((journey) => ({ slug: journey.slug })), ...discoveredGuides.map((guide) => ({ slug: guide.slug }))];
@@ -22,7 +27,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function GuidePage({ params }: { params: Promise<{ slug: string }> }) {
   const slug = (await params).slug;
-  const journey = getJourneyBySlug(slug);
+  const record = getJourneyBySlug(slug);
+  const journey = record ? await currentJourneyReview(record) : undefined;
   const discovered = getDiscoveredGuideBySlug(slug);
   if (!journey && !discovered) notFound();
   if (!journey && discovered && discovered.slug !== slug) permanentRedirect(`/guides/${discovered.slug}`);
@@ -36,7 +42,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
     description: summary,
     url: `${siteUrl}/guides/${slug}`,
     isPartOf: { "@type": "WebSite", name: "GovRoute", url: siteUrl },
-    reviewedBy: { "@type": "Organization", name: "GovRoute" },
+    ...(journey?.reviewStatus === "verified" ? { reviewedBy: { "@type": "Organization", name: "GovRoute" } } : {}),
     dateModified: journey?.reviewedAt ?? discovered!.reviewedAt,
     isBasedOn: discovered ? guideSource(discovered.officialUrl, publisher) : journey!.sources.map((source) => guideSource(source.url, source.publisher)),
     breadcrumb: { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Guides", item: `${siteUrl}/guides` }, { "@type": "ListItem", position: 2, name: title, item: `${siteUrl}/guides/${slug}` }] }
