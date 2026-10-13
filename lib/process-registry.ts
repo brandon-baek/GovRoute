@@ -3,6 +3,7 @@ import { openRegistry, type PlaceContext } from "@/lib/place-registry";
 import { fitsServiceArea } from "@/lib/service-area";
 import { withSourceFreshness } from "@/lib/source-freshness";
 import { journeySchema } from "@/lib/schema";
+import { applySourceChecks, type SourceCheck } from "@/lib/source-checks";
 
 export async function publishedProcesses(state?: string, placeIds: string[] = [], context?: PlaceContext) {
   const db = await openRegistry();
@@ -34,5 +35,16 @@ export async function publishedProcesses(state?: string, placeIds: string[] = []
     current.delete(item.journey.id);
     if(id && territories.has(id)) current.set(item.journey.id,{...item.journey,territoryIds:item.journey.jurisdiction==="federal"?undefined:[id]});
   }
-  return { journeys: [...current.values()].filter(journey=>fitsServiceArea(journey,context,placeIds)).map(journey=>withSourceFreshness(journey)), storage: "registry-process-catalog" as const };
+  return { journeys: [...current.values()].filter(journey=>fitsServiceArea(journey,context,placeIds)).map(journey=>{
+    const checks=journey.sources.map(source=>{
+      const row=db.prepare(`SELECT s.id,
+        coalesce((SELECT status FROM legal_source_checks c WHERE c.source_id=s.id ORDER BY c.id DESC LIMIT 1),'not-checked') AS status,
+        (SELECT checked_at FROM legal_source_checks c WHERE c.source_id=s.id ORDER BY c.id DESC LIMIT 1) AS checkedAt,
+        (SELECT max(new.retrieved_at) FROM legal_snapshots new WHERE new.source_id=s.id
+          AND EXISTS(SELECT 1 FROM legal_snapshots old WHERE old.source_id=new.source_id AND old.id<new.id AND old.sha256<>new.sha256)) AS changedAt
+        FROM legal_sources s WHERE s.id=? AND s.url=?`).get(source.id,source.url) as SourceCheck|undefined;
+      return row??{id:source.id,status:"not-checked" as const,checkedAt:null};
+    });
+    return withSourceFreshness(applySourceChecks(journey,checks));
+  }), storage: "registry-process-catalog" as const };
 }

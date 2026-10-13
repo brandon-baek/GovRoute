@@ -9,7 +9,8 @@ import { getStoredJourneys } from "@/lib/database";
 import { retrieveDiscoveredGuides } from "@/lib/discovered-guides";
 import { consumeRequest, consumeAIRoute } from "@/lib/request-limits";
 import { stateByCode, statesInText } from "@/lib/jurisdictions";
-import { contextForPlaces, relevantLegalSources } from "@/lib/place-registry";
+import { contextForAddress, contextForPlaces, relevantLegalSources } from "@/lib/place-registry";
+import { resolveAddress } from "@/lib/address-resolver";
 import { parcelRequirements, requiresParcelEvidence } from "@/lib/place-context";
 import { processJourneys, processPublications } from "@/lib/process-catalog";
 import { publishedProcesses } from "@/lib/process-registry";
@@ -67,7 +68,15 @@ export async function POST(request: NextRequest) {
     }
 
     const needsCounty=["building_permit","property","public_property_repair"].includes(taskTopic(body.message)??"") || requiresParcelEvidence(body.message);
-    const context = body.placeIds?.length ? await contextForPlaces(body.placeIds,"community",[],needsCounty) : undefined;
+    const recheckAddress=Boolean(body.locationAddress) && needsCounty;
+    let context = body.placeIds?.length ? await contextForPlaces(body.placeIds,"community",[],needsCounty && !recheckAddress) : undefined;
+    if(recheckAddress) {
+      try {
+        const matches=await resolveAddress(body.locationAddress!);
+        if(matches.length!==1)return NextResponse.json({status:"clarify",message:"Confirm one address match using the location lookup before continuing.",alternatives:[]},{headers:{"Cache-Control":"no-store, private"}});
+        context=await contextForAddress(matches[0]);
+      } catch {return NextResponse.json({status:"clarify",message:"Address verification is unavailable. Try again or clear the address and select a community.",alternatives:[]},{headers:{"Cache-Control":"no-store, private"}});}
+    }
     if (body.placeIds?.length && body.placeIds.some(id => !context?.places.some(place => place.id === id))) return NextResponse.json({ status: "clarify", message: "Your selected place is unavailable. Search for the location again or choose a state.", alternatives: [] });
     const contextStates = [...new Set(context?.places.map((place) => place.state_code).filter((code): code is string => Boolean(code)) ?? [])];
     if (contextStates.length > 1 || (body.state && contextStates.length === 1 && body.state !== contextStates[0])) return NextResponse.json({ status: "clarify", message: "Your location crosses state boundaries or differs from the selected state. Choose the state whose process you need.", alternatives: [] });
@@ -89,7 +98,8 @@ export async function POST(request: NextRequest) {
     }
     if (!federalPassport && !independentRecordTask && !body.state && locations.length > 1) return NextResponse.json({ status: "clarify", message: "Which state's rules should I use? Choose a state above or use the moving planner for a cross-state process.", alternatives: [] });
     if (!federalPassport && !independentRecordTask && body.state && locations.length === 1 && body.state !== locations[0].code) return NextResponse.json({ status: "clarify", message: "Your request names a different state from the selected location. Choose the state whose rules you need, then try again.", alternatives: [] });
-    const scopedIds=publicationPlaceIds(context,body.placeIds??[]);
+    const selectedIds=recheckAddress?context?.places.map(p=>p.id)??[]:body.placeIds??[];
+    const scopedIds=publicationPlaceIds(context,selectedIds);
     const processes = await publishedProcesses(location, scopedIds, context);
     if (requiresParcelEvidence(body.message) && !isPropertyLookup(body.message)) {
       const existingSources = await relevantLegalSources(scopedIds, "property");

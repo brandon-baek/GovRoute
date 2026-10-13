@@ -20,7 +20,9 @@ export async function containingCounty(placeLayer: string, countyLayer: string, 
   if (features.length !== 1 || features[0].attributes.GEOID !== geoid) throw new Error("Ambiguous community boundary");
   const polygon = features[0].geometry;
   if (!polygon?.rings?.length || polygon.rings.some(ring => !Array.isArray(ring) || ring.length < 4 || ring.some(point => point.length !== 2 || !point.every(Number.isFinite) || Math.abs(point[0]) > 180 || Math.abs(point[1]) > 90))) throw new Error("Invalid community polygon");
-  const counties = await query(countyLayer, { where: "1=1", geometry: JSON.stringify(polygon), geometryType: "esriGeometryPolygon", inSR: "4326", spatialRel: "esriSpatialRelContains", outFields: "GEOID", returnGeometry: "false" }, fetcher);
+  // ArcGIS applies this relationship to the input polygon: the community must
+  // be WITHIN a county feature. CONTAINS asks for counties inside the community.
+  const counties = await query(countyLayer, { where: "1=1", geometry: JSON.stringify(polygon), geometryType: "esriGeometryPolygon", inSR: "4326", spatialRel: "esriSpatialRelWithin", outFields: "GEOID", returnGeometry: "false" }, fetcher);
   // Spanning more than one county must be resolved with an address instead.
   if (counties.length !== 1 || !/^[0-9]{5}$/.test(counties[0].attributes.GEOID ?? "") || !counties[0].attributes.GEOID!.startsWith(geoid.slice(0, 2))) return null;
   return counties[0].attributes.GEOID!;

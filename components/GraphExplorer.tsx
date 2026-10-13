@@ -77,7 +77,8 @@ export function GraphExplorer({ nodes, edges, journeys, suggestions, initialFocu
     node.append("text").attr("x", 13).attr("y", 4).text((item) => item.label.length > 35 ? `${item.label.slice(0, 34)}…` : item.label).attr("display", (item) => item.id === selectedId || scope !== "all" ? null : "none");
     const tooltip = d3.select(tooltipRef.current);
     node.on("pointerenter", function (event, item) {
-      d3.select(this).raise().select("text").attr("display", null); tooltip.style("opacity", "1").html(`<span>${labels[item.kind] ?? item.kind}</span><strong>${item.label}</strong>`);
+      d3.select(this).raise().select("text").attr("display", null); tooltip.style("opacity", "1");
+      tooltip.selectAll("*").remove();tooltip.append("span").text(labels[item.kind] ?? item.kind);tooltip.append("strong").text(item.label);
       const box = frameRef.current?.getBoundingClientRect(); if (box) tooltip.style("left", `${Math.max(12, Math.min(event.clientX - box.left + 12, box.width - 265))}px`).style("top", `${Math.max(12, event.clientY - box.top - 12)}px`);
     }).on("pointerleave", function (_event, item) { d3.select(this).select("text").attr("display", item.id === selectedId || scope !== "all" ? null : "none"); tooltip.style("opacity", "0"); }).on("click", (_event, item) => setSelectedId(item.id));
     const zoom = d3.zoom<SVGSVGElement, unknown>().scaleExtent([.3, 4]).on("zoom", (event) => viewport.attr("transform", event.transform)); svg.call(zoom).on("dblclick.zoom", null);
@@ -88,7 +89,8 @@ export function GraphExplorer({ nodes, edges, journeys, suggestions, initialFocu
     node.call(d3.drag<SVGGElement, VizNode>().on("start", (event, item) => { if (!event.active) simulation.alphaTarget(.2).restart(); item.fx = item.x; item.fy = item.y; }).on("drag", (event, item) => { item.fx = event.x; item.fy = event.y; }).on("end", (event, item) => { if (!event.active) simulation.alphaTarget(0); item.fx = null; item.fy = null; }));
     resetRef.current = () => svg.transition().duration(250).call(zoom.transform, d3.zoomIdentity);
     centerRef.current = (id) => { const item = graphNodes.find((candidate) => candidate.id === id); if (item?.x && item?.y) svg.transition().duration(320).call(zoom.transform, d3.zoomIdentity.translate(width / 2 - item.x * 1.5, height / 2 - item.y * 1.5).scale(1.5)); };
-    return () => { graphNodes.forEach((item) => savedPositions.current.set(item.id, { x: item.x ?? width / 2, y: item.y ?? height / 2 })); simulation.stop(); };
+    const positionCache=savedPositions.current;
+    return () => { graphNodes.forEach((item) => positionCache.set(item.id, { x: item.x ?? width / 2, y: item.y ?? height / 2 })); simulation.stop(); };
   }, [activeNodes, activeEdges, size, scope, selectedId]);
 
   function toggle(kind: GraphNode["kind"]) { setEnabled((current) => { const next = new Set(current); if (next.has(kind) && next.size > 1) next.delete(kind); else next.add(kind); return next; }); }

@@ -2,6 +2,13 @@ import { describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { journeys } from "@/data/curated/journeys";
 vi.mock("@/lib/database", () => ({ getStoredJourneys: () => ({ journeys, storage: "bundled-fallback" }) }));
+// Keep fallback-unit scenarios independent of any real snapshot mounted for
+// integration checks in the same checkout.
+vi.mock("@/lib/place-registry", () => ({
+  openRegistry: async () => null,
+  contextForPlaces: async () => ({places:[],relations:[],authorities:[],unresolved:[],precision:"community"}),
+  relevantLegalSources: async () => []
+}));
 vi.mock("@/lib/ai-router", () => ({ routeWithAI: vi.fn() }));
 import { routeWithAI } from "@/lib/ai-router";
 import { POST } from "./route";

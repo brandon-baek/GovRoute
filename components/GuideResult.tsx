@@ -26,6 +26,7 @@ export function GuideResult({ journey, compact = false }: { journey: Journey; co
 
       {journey.coverageLevel==="official-handoff" && <div className="coverage-label"><strong>Official starting route</strong><p>The receiving agency still needs to confirm its local requirements. This checklist is a handoff, with source-checked navigation steps.</p></div>}
       {journey.scopeNote && <p className="scope-note">{journey.scopeNote}</p>}
+      {journey.reviewNote && <p className="caution" role="status">{journey.reviewNote}</p>}
       {!compact && <div className="checklist-progress"><div><strong>{completed.length} of {journey.steps.length} steps complete</strong><span>Progress stays in this browser. No address or identification numbers are saved.</span></div><progress value={completed.length} max={journey.steps.length} aria-label="Checklist progress" /><button type="button" onClick={()=>window.print()}>Print checklist</button></div>}
 
       {journey.eligibility?.length ? <details className="process-eligibility"><summary>Does this route fit my situation?</summary>{journey.eligibility.map((item) => <p key={item}>{item}</p>)}</details> : null}
@@ -58,12 +59,13 @@ export function GuideResult({ journey, compact = false }: { journey: Journey; co
         <ul>
           {journey.sources.map((source) => (
             <li key={source.id}>
-              <a href={source.url} target="_blank" rel="noreferrer"><span>{source.title}<small>{source.publisher}</small></span><ExternalIcon /></a>
+              <a href={source.url} target="_blank" rel="noreferrer"><span>{source.title}<small>{source.publisher}</small>{source.indexStatus && <small>Index: {source.indexStatus==="not-checked"?"not yet checked":source.indexStatus}{source.indexCheckedAt?" · "+source.indexCheckedAt.slice(0,10):""}</small>}</span><ExternalIcon /></a>
             </li>
           ))}
         </ul>
       </div>
 
+      {journey.sources.some(source=>source.indexStatus) && <p className="privacy-note">Automated indexing and instruction review are separate checks.</p>}
       {!compact && (
         <div className="result-actions">
           {journey.officialAction && <a className="primary-action" href={journey.officialAction.url} target="_blank" rel="noreferrer">{journey.officialAction.label}<ExternalIcon /></a>}

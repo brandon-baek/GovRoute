@@ -12,7 +12,7 @@ export type GovGraph = {
   nodeById: Map<string, GraphNode>;
 };
 
-export function buildGraph(records: Journey[] = journeys): GovGraph {
+export function buildGraph(records: Journey[] = journeys, includeDiscovered = true): GovGraph {
   const nodes = new Map<string, GraphNode>();
   const edges: GraphEdge[] = [];
 
@@ -100,7 +100,7 @@ export function buildGraph(records: Journey[] = journeys): GovGraph {
     }
   }
 
-  for (const guide of discoveredGuides) {
+  for (const guide of includeDiscovered ? discoveredGuides : []) {
     const categoryId = `program:category:${slug(guide.category)}`;
     if (!nodes.has(categoryId)) nodes.set(categoryId, {
       id: categoryId,
@@ -156,7 +156,7 @@ export function buildGraph(records: Journey[] = journeys): GovGraph {
 }
 
 export function traceJourney(journey: Journey) {
-  const graph = buildGraph([journey]);
+  const graph = buildGraph([journey], false);
   return {
     nodes: graph.nodes.map(({ id, kind, label }) => ({ id, kind, label })),
     edges: graph.edges

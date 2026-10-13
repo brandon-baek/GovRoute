@@ -9,7 +9,7 @@ describe("national whole-boundary county adapter",()=>{
     const request=fetcher([{attributes:{GEOID:"06037"}}]);
     expect(await containingCounty(censusService+"/29",censusService+"/82","0612345",request)).toBe("06037");
     const parameters=request.mock.calls[1][1].body as URLSearchParams;
-    expect(parameters.get("spatialRel")).toBe("esriSpatialRelContains");
+    expect(parameters.get("spatialRel")).toBe("esriSpatialRelWithin");
     expect(JSON.parse(parameters.get("geometry")!)).toEqual(polygon);
   });
   it("does not certify multi-county, absent, or other-state containment",async()=>{

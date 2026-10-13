@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Place, PlaceContext } from "@/lib/place-registry";
 
 type Candidate = { matchedAddress: string; context: PlaceContext };
-export function LocationPicker({ state, onChange }: { state: string; onChange: (ids: string[], label: string, stateCode?: string, context?: PlaceContext) => void }) {
+export function LocationPicker({ state, onChange }: { state: string; onChange: (ids: string[], label: string, stateCode?: string, context?: PlaceContext, address?:string) => void }) {
   const [mode, setMode] = useState<"place" | "address">("place");
   const [query, setQuery] = useState("");
   const [places, setPlaces] = useState<Place[]>([]);
@@ -33,10 +33,10 @@ export function LocationPicker({ state, onChange }: { state: string; onChange: (
     finally { if(token===version.current)setLoading(false); }
   }
 
-  function select(ids: string[], label: string, code?: string, context?:PlaceContext) {
+  function select(ids: string[], label: string, code?: string, context?:PlaceContext, address?:string) {
     cancel();
     setSelected(label); setPlaces([]); setCandidates([]); setQuery(""); setMessage("");
-    onChange(ids, label, code, context);
+    onChange(ids, label, code, context, address);
   }
   async function selectPlace(place:Place) {
     const token=++version.current;active.current?.abort();const controller=new AbortController();active.current=controller;setLoading(true);setMessage("Checking county boundaries and government context…");
@@ -59,7 +59,7 @@ export function LocationPicker({ state, onChange }: { state: string; onChange: (
           onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); void search(); } }} />
         <button type="button" disabled={loading || query.trim().length < (mode === "place" ? 2 : 8)} onClick={() => void search()}>{loading ? "Looking up…" : "Look up"}</button>
       </div>
-      {mode === "address" && <p className="privacy-note">Your address is sent to the US Census geocoder for this lookup. Govroute does not save it or send it to the AI router. Address matches do not verify parcel boundaries.</p>}
+      {mode === "address" && <p className="privacy-note">Your address is sent to the US Census geocoder for lookup and rechecked when you request location-based guidance. Govroute does not save it or send it to the AI router. Address matches do not verify parcel boundaries.</p>}
       <div aria-live="polite">
         {message && <p>{message}</p>}
         {places.length > 0 && <ul className="place-options">{places.map((place) => <li key={`${place.id}:${place.matched_name}`}>
@@ -68,7 +68,7 @@ export function LocationPicker({ state, onChange }: { state: string; onChange: (
           </button></li>)}</ul>}
         {candidates.length > 0 && <ul className="place-options">{candidates.map((candidate, index) => <li key={index}><button type="button"
           disabled={loading || !candidate.context.places.length}
-          onClick={() => select(candidate.context.places.map((place) => place.id), "Address area matched", candidate.context.places.find((place) => place.kind === "state")?.state_code ?? undefined,candidate.context)}>
+          onClick={() => select(candidate.context.places.map((place) => place.id), "Address area matched", candidate.context.places.find((place) => place.kind === "state")?.state_code ?? undefined,candidate.context,candidate.matchedAddress)}>
           <strong>{candidate.matchedAddress}</strong><span>{candidate.context.places.length ? "Use this address area" : "Location registry is not available for this match"}</span>
         </button></li>)}</ul>}
       </div>

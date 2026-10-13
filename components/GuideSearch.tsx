@@ -31,6 +31,7 @@ export function GuideSearch() {
   const [placeIds, setPlaceIds] = useState<string[]>([]);
   const [locationLabel, setLocationLabel] = useState("");
   const [locationContext,setLocationContext]=useState<PlaceContext>();
+  const [locationAddress,setLocationAddress]=useState<string>();
   const [pickerKey,setPickerKey]=useState(0);
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState("");
@@ -55,7 +56,7 @@ export function GuideSearch() {
         method: "POST",
         signal: controller.signal,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: clean, state: state || undefined, placeIds: placeIds.length ? placeIds : undefined, history: [] })
+        body: JSON.stringify({ message: clean, state: state || undefined, placeIds: placeIds.length ? placeIds : undefined, locationAddress, history: [] })
       });
       const data = (await response.json()) as ApiResponse;
       if (version!==requestVersion.current) return;
@@ -85,9 +86,9 @@ export function GuideSearch() {
         </div>
         <p className="privacy-note">Do not include Social Security, account, passport, or license numbers.</p>
         <div className="location-fields search-location">
-          <label htmlFor="search-state">Where should we look?<select id="search-state" value={state} onChange={(event) => { setState(event.target.value); setPlaceIds([]); setLocationLabel("");setLocationContext(undefined);setPickerKey(k=>k+1); resetLocation(); }}><option value="">Choose a state when needed</option>{states.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}</select></label>
+          <label htmlFor="search-state">Where should we look?<select id="search-state" value={state} onChange={(event) => { setState(event.target.value); setPlaceIds([]); setLocationLabel("");setLocationContext(undefined);setLocationAddress(undefined);setPickerKey(k=>k+1); resetLocation(); }}><option value="">Choose a state when needed</option>{states.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}</select></label>
         </div>
-        <LocationPicker key={pickerKey} state={state} onChange={(ids, label, code,context) => { setPlaceIds(ids); setLocationLabel(label);setLocationContext(context); if (code) setState(code); resetLocation(); }} />
+        <LocationPicker key={pickerKey} state={state} onChange={(ids, label, code,context,address) => { setPlaceIds(ids); setLocationLabel(label);setLocationContext(context);setLocationAddress(address); if (code) setState(code); resetLocation(); }} />
         {locationLabel && <p className="selected-location">Selected area: {locationLabel}</p>}
         {locationContext && <LocationOverview context={locationContext} />}
       </form>
