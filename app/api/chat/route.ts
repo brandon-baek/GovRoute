@@ -10,7 +10,7 @@ import { retrieveDiscoveredGuides } from "@/lib/discovered-guides";
 import { consumeRequest, consumeAIRoute } from "@/lib/request-limits";
 import { stateByCode, statesInText } from "@/lib/jurisdictions";
 import { contextForAddress, contextForPlaces, relevantLegalSources } from "@/lib/place-registry";
-import { addressLocalActions } from "@/lib/local-evidence";
+import { enrichAddressActions } from "@/lib/local-evidence";
 import { buildAddressWorkspace } from "@/lib/address-workspace";
 import type { CensusMatch } from "@/lib/place-context";
 import { resolveAddress } from "@/lib/address-resolver";
@@ -22,6 +22,7 @@ import { localResources } from "@/lib/local-resources";
 import { isPropertyLookup, taskTopic } from "@/lib/task-topics";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 function rateLimited(request: NextRequest) {
   const key = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
     const processes = await publishedProcesses(location, scopedIds, context);
     if (verifiedAddressMatch && (requiresParcelEvidence(body.message) || addressMapTask)) {
       const workspace=await buildAddressWorkspace(verifiedAddressMatch);
-      workspace.localActions=await addressLocalActions(context,body.message);
+      workspace.localActions=await enrichAddressActions(context,body.message);
       return NextResponse.json({status:"address_guidance",message:"Here are the map findings and next actions for your selected address.",workspace,alternatives:[]},{headers:{"Cache-Control":"no-store, private","Referrer-Policy":"no-referrer"}});
     }
     if (requiresParcelEvidence(body.message) && !isPropertyLookup(body.message)) {
@@ -215,7 +216,7 @@ export async function POST(request: NextRequest) {
 
     const journey = matches[0].journey;
     const workspace=verifiedAddressMatch && taskTopic(body.message)==="building_permit"?await buildAddressWorkspace(verifiedAddressMatch):undefined;
-    if(workspace)workspace.localActions=await addressLocalActions(context,body.message);
+    if(workspace)workspace.localActions=await enrichAddressActions(context,body.message);
     return NextResponse.json({
       status: "matched",
       message: journey.summary,

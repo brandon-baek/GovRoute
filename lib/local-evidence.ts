@@ -76,3 +76,14 @@ export async function addressLocalActions(context: PlaceContext | undefined, tas
     return { procedures, evidence, topics: localTopics.map(t => ({ id: t.id, label: t.label, count: evidence.filter(e => e.topic === t.id).length })), unavailable: empty.unavailable };
   } catch { return { ...empty, procedures, unavailable: true }; }
 }
+
+export async function enrichAddressActions(context:PlaceContext|undefined,task=""):Promise<LocalActions> {
+  const actions=await addressLocalActions(context,task);
+  if(task)try {
+    const {liveAddressSources}=await import("@/lib/local-live-sources");
+    const fresh=await liveAddressSources(context,task);
+    const urls=new Set(fresh.map(page=>page.url));actions.evidence=[...fresh,...actions.evidence.filter(page=>!urls.has(page.url))].slice(0,12);
+    actions.topics=localTopics.map(t=>({id:t.id,label:t.label,count:actions.evidence.filter(e=>e.topic===t.id).length}));
+  }catch{/* Retained indexed evidence and published procedures remain usable. */}
+  return actions;
+}

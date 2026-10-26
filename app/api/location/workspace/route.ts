@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { contextForAddress } from "@/lib/place-registry";
-import { addressLocalActions } from "@/lib/local-evidence";
+import { enrichAddressActions } from "@/lib/local-evidence";
 import { resolveAddress } from "@/lib/address-resolver";
 import { buildAddressWorkspace } from "@/lib/address-workspace";
 import { consumeRequest } from "@/lib/request-limits";
 export const runtime = "nodejs";
+export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 const headers = { "Cache-Control": "no-store, private", "Referrer-Policy": "no-referrer" };
 export async function POST(request: NextRequest) {
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     if (matches.length !== 1) return NextResponse.json({ message: "Choose one address match in the location lookup, then try again." }, { status: 409, headers });
     // Re-resolve server-side; never trust visitor-supplied coordinates or county IDs.
     const report=await buildAddressWorkspace(matches[0],fetch,parcelId);
-    try {report.localActions=await addressLocalActions(await contextForAddress(matches[0]),task);} catch {report.localActions={procedures:[],evidence:[],topics:[],unavailable:true};}
+    try {report.localActions=await enrichAddressActions(await contextForAddress(matches[0]),task);} catch {report.localActions={procedures:[],evidence:[],topics:[],unavailable:true};}
     return NextResponse.json(report, { headers });
   } catch { return NextResponse.json({ message: "The official address service is unavailable. Community guides remain available; retry the address report later." }, { status: 503, headers }); }
 }

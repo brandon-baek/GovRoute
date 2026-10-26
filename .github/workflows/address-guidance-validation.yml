@@ -27,10 +27,11 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run lint
-      - name: Live public-address provider checks
-        run: npx tsx scripts/check-address-workspace.ts
       - run: npm run build
         env:
           VERCEL: '1'
+      - name: Live public-address provider checks
+        run: npx tsx scripts/check-address-workspace.ts
 # The existing foundation workflow retains its independent dependency-audit gate.
 # This job exposes code/test failures even when that audit blocks the foundation job.
+

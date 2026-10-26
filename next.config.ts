@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
     "/api/processes": registryFiles,
     "/api/location/resolve": registryFiles,
     "/api/location/context": registryFiles,
+    "/api/location/workspace": registryFiles,
     "/api/coverage": registryFiles,
     "/guides/*": registryFiles,
     "/api/catalog": ["./data/govguide.db"],
@@ -44,3 +45,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+

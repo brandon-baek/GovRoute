@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 const mocks = vi.hoisted(() => ({ allowed: true, resolve: vi.fn(), build: vi.fn() }));
 vi.mock("@/lib/request-limits", () => ({ consumeRequest: () => mocks.allowed }));
 vi.mock("@/lib/place-registry",()=>({contextForAddress:async()=>({places:[]})}));
-vi.mock("@/lib/local-evidence",()=>({addressLocalActions:async()=>({procedures:[],evidence:[],topics:[],unavailable:true})}));
+vi.mock("@/lib/local-evidence",()=>({enrichAddressActions:async()=>({procedures:[],evidence:[],topics:[],unavailable:true})}));
 vi.mock("@/lib/address-resolver", () => ({ resolveAddress: mocks.resolve }));
 vi.mock("@/lib/address-workspace", () => ({ buildAddressWorkspace: mocks.build }));
 import { POST } from "./route";
