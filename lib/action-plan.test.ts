@@ -1,5 +1,5 @@
 import {describe,it,expect} from "vitest";
-import {emptyPlan,saveGuide,parsePlan,planSteps,togglePlanStep,preparationPacket,stepKey,fingerprintJourney,guideChanges,moveJourney} from "./action-plan";
+import {emptyPlan,saveGuide,parsePlan,planSteps,togglePlanStep,preparationPacket,stepKey,fingerprintJourney,verifyPlanSnapshots,guideChanges,moveJourney} from "./action-plan";
 import {processJourneys} from "./process-catalog";
 const passport=()=>structuredClone(processJourneys.find(j=>j.id==="journey-passport-apply")!);
 describe("combined private action plans",()=>{
@@ -25,7 +25,10 @@ describe("combined private action plans",()=>{
  it("restores only dependency-consistent progress and valid preparation readiness",async()=>{
   const plan=await saveGuide(emptyPlan(),passport());const j=plan.guides[0].journey;const child=j.steps.find(s=>s.dependsOn?.length)!;plan.completed=[stepKey(j.id,child.id)];plan.prepared=["removed requirement"];const restored=parsePlan(JSON.parse(JSON.stringify(plan)));expect(restored.completed).toEqual([]);expect(restored.prepared).toEqual([]);
  });
+ it("detects changed instruction text in an imported snapshot",async()=>{
+  const plan=await saveGuide(emptyPlan(),passport());plan.guides[0].journey.steps[0].detail="Altered instructions";await expect(verifyPlanSnapshots(plan)).rejects.toThrow("version check");
+ });
  it("turns a real interstate plan into one source-linked portable guide",async()=>{
-  const move=moveJourney("NY","TX",true)!;const plan=await saveGuide(emptyPlan(),move);expect(planSteps(plan).find(s=>s.step.id==="license")?.blockedBy.length).toBeGreaterThan(0);expect(move.steps.find(s=>s.id==="registration")?.deadlines?.[0]).toContain("30 days");expect(moveJourney("CA","CA",true)).toBeNull();expect(parsePlan(JSON.parse(JSON.stringify(plan))).guides[0].journey.id).toBe("move-NY-TX-vehicle");
+  const move=moveJourney("NY","TX",true)!;const plan=await saveGuide(emptyPlan(),move);expect(planSteps(plan).find(s=>s.step.id==="license")?.blockedBy.length).toBeGreaterThan(0);expect(move.steps.find(s=>s.id==="registration")?.deadlines?.[0]).toContain("30 days");expect(await fingerprintJourney(move)).toBe(plan.guides[0].fingerprint);expect(moveJourney("CA","CA",true)).toBeNull();expect(parsePlan(JSON.parse(JSON.stringify(plan))).guides[0].journey.id).toBe("move-NY-TX-vehicle");
  });
 });
