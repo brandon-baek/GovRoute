@@ -80,8 +80,8 @@ export async function parcelByAddress(match: CensusMatch, fetcher: typeof fetch 
     // Situs may include a city/ZIP, so compare a prefix and validate each returned street again.
     const response=await fetcher(layer.url+"/query",{
       method:"POST",cache:"no-store",redirect:"error",signal:AbortSignal.timeout(7000),
-      body:new URLSearchParams({f:"json",where:selectedParcel?"AIN='"+selectedParcel+"'":"UPPER(SitusFullAddress) LIKE '"+street+"%'",outFields:"AIN,APN,SitusFullAddress,SitusAddress",returnGeometry:"true",outSR:"4326",resultRecordCount:"10",
-        ...(selectedParcel?{geometry:match.coordinates.x+","+match.coordinates.y,geometryType:"esriGeometryPoint",inSR:"4326",spatialRel:"esriSpatialRelIntersects",distance:"150",units:"esriSRUnit_Meter"}:{})})
+      body:new URLSearchParams({f:"json",where:selectedParcel?"AIN='"+selectedParcel+"'":"UPPER(SitusFullAddress) LIKE '"+street+"%'",outFields:"AIN,APN,SitusFullAddress,SitusAddress,SitusUnit",returnGeometry:"true",outSR:"4326",resultRecordCount:"10",
+        ...{geometry:match.coordinates.x+","+match.coordinates.y,geometryType:"esriGeometryPoint",inSR:"4326",spatialRel:"esriSpatialRelIntersects",distance:"150",units:"esriSRUnit_Meter"}})
     });
     const data=await boundedJson(response);
     if(!isRecord(data)||data.error||data.exceededTransferLimit||!Array.isArray(data.features))throw new Error();
@@ -100,7 +100,7 @@ export async function parcelByAddress(match: CensusMatch, fetcher: typeof fetch 
       if(!id||!/^[0-9-]{5,20}$/.test(id))throw new Error();
       keyed.set(id,f);
     }
-    if(keyed.size!==1)return {finding:{...base,status:"ambiguous",note:"This street address matches multiple assessor parcels. Select the actual property in the official map; none was chosen automatically."}};
+    if(keyed.size!==1)return {finding:{...base,status:"ambiguous",candidates:[...keyed].map(([id,f])=>({id,label:String(f.attributes.SitusAddress??f.attributes.SitusFullAddress??"Parcel")+(f.attributes.SitusUnit?" Unit "+String(f.attributes.SitusUnit):"")+" · "+id})),note:"This street address matches multiple assessor parcels. Select the actual property in the official map; none was chosen automatically."}};
     const feature=[...keyed.values()][0];const values:Record<string,string>={};
     for(const key of ["AIN","APN"])if(typeof feature.attributes[key]==="string")values[key]=String(feature.attributes[key]).slice(0,30);
     const raw=feature.geometry?.rings;
@@ -113,7 +113,7 @@ export async function nearbyParcels(match:CensusMatch,fetcher:typeof fetch=fetch
   const layer=addressLayers.parcel;
   const base={id:"parcel",label:"Choose the property",values:{},source:layer.url,publisher:layer.publisher,checkedAt:new Date().toISOString()};
   try {
-    const response=await fetcher(layer.url+"/query",{method:"POST",cache:"no-store",redirect:"error",signal:AbortSignal.timeout(7000),body:new URLSearchParams({f:"json",where:"1=1",geometry:match.coordinates.x+","+match.coordinates.y,geometryType:"esriGeometryPoint",inSR:"4326",spatialRel:"esriSpatialRelIntersects",distance:"75",units:"esriSRUnit_Meter",outFields:"AIN,APN,SitusAddress",returnGeometry:"false",resultRecordCount:"10"})});
+    const response=await fetcher(layer.url+"/query",{method:"POST",cache:"no-store",redirect:"error",signal:AbortSignal.timeout(7000),body:new URLSearchParams({f:"json",where:"1=1",geometry:match.coordinates.x+","+match.coordinates.y,geometryType:"esriGeometryPoint",inSR:"4326",spatialRel:"esriSpatialRelIntersects",distance:"75",units:"esriSRUnit_Meter",outFields:"AIN,APN,SitusAddress,SitusUnit",returnGeometry:"false",resultRecordCount:"50"})});
     const data=await boundedJson(response);
     if(!isRecord(data)||data.error||!Array.isArray(data.features))throw new Error();
     const candidates:{id:string;label:string}[]=[];
@@ -121,7 +121,7 @@ export async function nearbyParcels(match:CensusMatch,fetcher:typeof fetch=fetch
       if(typeof a.AIN!=="string"||!/^[0-9]{10}$/.test(a.AIN))continue;
       candidates.push({id:a.AIN,label:(typeof a.SitusAddress==="string"?a.SitusAddress+" · ":"")+"Parcel "+String(a.APN??a.AIN)});
     }
-    return {finding:{...base,status:candidates.length?"ambiguous":"no_match",candidates:[...new Map(candidates.map(c=>[c.id,c])).values()],note:candidates.length?"The assessor may use a different address. Choose your property from these nearby parcels only if its identity matches your records. No nearest parcel was selected automatically.":"No nearby assessor parcel was returned. Use the official assessor lookup."}};
+    return {finding:{...base,status:candidates.length?"ambiguous":"no_match",candidates:[...new Map(candidates.map(c=>[c.id,c])).values()],note:candidates.length?"The assessor may use a different address. Choose your property from these nearby parcels only if its identity matches your records. No nearest parcel was selected automatically."+(data.exceededTransferLimit?" This is a partial list; use the official assessor map if your property is missing.":""):"No nearby assessor parcel was returned. Use the official assessor lookup."}};
   }catch{return {finding:{...base,status:"unavailable",note:"Nearby parcel lookup is temporarily unavailable. No parcel was inferred."}};}
 }
 

@@ -60,7 +60,7 @@ async function inspectGovernment(resource:Pick<LocalResource,"url"|"publisher"|"
       try {const page=await download(href,domain);pages.push({url:page.url,...parseOfficialPage(page.text,page.url,domain,task)});}catch{/* Keep useful pages after a failed fetch. */}
     }
     return pages.flatMap(page=>{const topics=topicForPage(page.title,page.url);const requested=localTopics.find(t=>t.id===task||t.terms.some(term=>task.toLowerCase().includes(term)));const topic=requested?topics.find(t=>t.id===requested.id):topics[0];if(!topic)return [];
-      const excerpts=extractLocalPassages(page.text,topic.terms);if(!excerpts.length)return [];
+      const excerpts=extractLocalPassages(page.text,topic.terms).filter(line=>line.toLowerCase().trim()!==page.title.toLowerCase().trim());if(!excerpts.length)return [];
       return [{id:"live:"+createHash("sha256").update(page.url).digest("hex").slice(0,16),title:page.title,url:page.url,publisher:resource.publisher,placeName:resource.placeName,topic:topic.id,indexedAt:new Date().toISOString(),status:"machine-indexed" as const,contentHash:createHash("sha256").update(page.text).digest("hex"),excerpts,warning:"Retrieved now from the government website linked to your address area. These are source passages; topic authority and service eligibility still need confirmation."}];
     });
   })().catch(()=>[]);

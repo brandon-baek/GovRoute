@@ -5,6 +5,7 @@ import { addressLocalActions, extractLocalPassages, topicForPage } from "./local
 describe("local official-page extraction",()=>{
   it("identifies tasks from page identity rather than incidental body mentions",()=>{
     expect(topicForPage("Building permits","https://example.gov/building-permits").map(t=>t.id)).toContain("building_permit");
+    expect(topicForPage("Report damaged public property in San Francisco","https://www.sf.gov/report-damaged-public-property").map(t=>t.id)).toContain("reports");
     expect(topicForPage("Home","https://example.gov/")).toHaveLength(0);
   });
   it("retains actual source instructions instead of inventing requirements",()=>{

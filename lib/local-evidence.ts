@@ -14,7 +14,7 @@ export const localTopics = [
   { id: "property", label: "Zoning and property", terms: ["zoning", "parcel", "recorded deed", "property records", "accessory dwelling"] },
   { id: "business", label: "Start a local business", terms: ["business license", "business registration", "business permit", "fictitious business"] },
   { id: "waste", label: "Trash and water services", terms: ["trash", "garbage", "water service", "sewer service", "recycling", "bulky item"] },
-  { id: "reports", label: "Report a local problem", terms: ["pothole", "illegal dumping", "report a problem", "service request", "311"] },
+  { id: "reports", label: "Report a local problem", terms: ["damaged public property", "pothole", "illegal dumping", "report a problem", "service request", "311"] },
   { id: "voting", label: "Voting and local records", terms: ["voter registration", "register to vote", "elections", "birth certificate", "vital records"] }
 ];
 const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
@@ -40,7 +40,8 @@ export async function addressLocalActions(context: PlaceContext | undefined, tas
   let procedures: Journey[] = [];
   try {
     const catalog = await publishedProcesses(state, publicationPlaceIds(context, selected), context);
-    procedures = catalog.journeys.filter(j => j.jurisdiction === "local");
+    const requestedTopic=localTopics.find(t=>t.id===task||t.terms.some(term=>normalize(task).includes(normalize(term))));
+    procedures = catalog.journeys.filter(j => j.jurisdiction === "local" && (!requestedTopic||topicForPage(j.title,j.officialAction?.url??"").some(t=>t.id===requestedTopic.id)));
   } catch { empty.unavailable = true; }
   try {
     const db = await openRegistry();
@@ -64,7 +65,7 @@ export async function addressLocalActions(context: PlaceContext | undefined, tas
       const topics = topicForPage(row.title, row.url);
       const topic = requested ? topics.find(t => t.id === requested.id) : topics[0];
       if (!topic) continue;
-      const excerpts = extractLocalPassages(row.content.slice(0, 150000), topic.terms);
+      const excerpts = extractLocalPassages(row.content.slice(0, 150000), topic.terms).filter(line=>normalize(line)!==normalize(row.title));
       if (!excerpts.length) continue;
       used.add(row.url);
       const old = !Number.isFinite(Date.parse(row.retrieved_at)) || Date.now() - Date.parse(row.retrieved_at) > 30 * 86400000;
