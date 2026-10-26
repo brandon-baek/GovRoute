@@ -18,7 +18,7 @@ export default async function GraphPage({ searchParams }: { searchParams: Promis
         <p>The network maps every published government task to its topic, official source, agency, and ordered steps when the source provides them.</p>
       </header>
       <div className="graph-stats" aria-label="Graph totals">
-        {counts.map(({ kind, count }) => <div key={kind}><strong>{count}</strong><span>{kind}{count === 1 ? "" : "s"}</span></div>)}
+        {counts.map(({ kind, count }) => <div key={kind}><strong>{count}</strong><span>{count === 1 ? kind : kind === "agency" ? "agencies" : kind + "s"}</span></div>)}
         <div><strong>{govGraph.edges.length}</strong><span>typed edges</span></div>
       </div>
       <GraphExplorer nodes={govGraph.nodes} edges={govGraph.edges} journeys={[...journeys.map(({ id, title, slug }) => ({ id, title, slug })), ...discoveredGuides.map(({ id, title, slug }) => ({ id, title, slug }))]} suggestions={gnn.suggestions.map(({ from, to, score, status }) => ({ from, to, score, status, relation: "related-to" as const }))} initialFocus={focus} />
@@ -29,3 +29,4 @@ export default async function GraphPage({ searchParams }: { searchParams: Promis
     </div>
   );
 }
+
