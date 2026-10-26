@@ -1,7 +1,7 @@
 import {describe,it,expect} from "vitest";
 import {createElement} from "react";
 import {renderToStaticMarkup} from "react-dom/server";
-import {AddressVisual,JurisdictionLayers} from "./LocationVisuals";
+import {AddressVisual,JurisdictionLayers} from "@/components/LocationVisuals";
 import type {AddressWorkspace} from "@/lib/address-workspace";
 const report:AddressWorkspace={checkedAt:"2026-10-26",precision:"address_range",map:{longitude:-118,latitude:34,parcelRings:[[[-118,34],[-117.999,34],[-117.999,34.001],[-118,34]]]},findings:[{id:"parcel",label:"Parcel",status:"matched",values:{APN:"123"},source:"https://example.gov/parcel",publisher:"County",checkedAt:"2026-10-26",note:"Confirm parcel identity"},{id:"flood",label:"Flood",status:"unavailable",values:{},source:"https://example.gov/flood",publisher:"FEMA",checkedAt:"2026-10-26",note:"Service unavailable"}],guides:[],limitations:[]};
 describe("location evidence visuals",()=>{
