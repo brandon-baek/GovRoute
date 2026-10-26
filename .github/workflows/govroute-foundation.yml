@@ -164,7 +164,7 @@ jobs:
           import json, os
           from pathlib import Path
           manifest=json.loads(Path("data/govroute-runtime.manifest.json").read_text())
-          manifest["url"]="https://github.com/brandon-baek/Project-Gov/releases/download/registry-"+os.environ["EXPECTED_HEAD"]+"/govroute-runtime.db.gz"
+          manifest["url"]="https://github.com/brandon-baek/GovRoute/releases/download/registry-"+os.environ["EXPECTED_HEAD"]+"/govroute-runtime.db.gz"
           Path("data/registry/runtime-release.json").write_text(json.dumps(manifest,indent=2)+"\n")
           PY
           git fetch origin "$BRANCH_NAME"

@@ -47,7 +47,7 @@ jobs:
         env:
           SAM_API_KEY: ${{ secrets.SAM_API_KEY }}
           GOVROUTE_CRAWL_LIMIT: 40
-          GOVROUTE_USER_AGENT: Govroute/1.0 (scheduled source review; github.com/brandon-baek/Project-Gov)
+          GOVROUTE_USER_AGENT: Govroute/1.0 (scheduled source review; github.com/brandon-baek/GovRoute)
 
       - name: Restore the pinned national serving snapshot
         run: node scripts/prepare-registry.mjs
@@ -159,7 +159,7 @@ jobs:
           import json, os
           from pathlib import Path
           manifest=json.loads(Path("data/govroute-runtime.manifest.json").read_text())
-          manifest["url"]="https://github.com/brandon-baek/Project-Gov/releases/download/registry-"+os.environ["GITHUB_SHA"]+"-"+os.environ["GITHUB_RUN_ID"]+"/govroute-runtime.db.gz"
+          manifest["url"]="https://github.com/brandon-baek/GovRoute/releases/download/registry-"+os.environ["GITHUB_SHA"]+"-"+os.environ["GITHUB_RUN_ID"]+"/govroute-runtime.db.gz"
           Path("data/registry/runtime-release.json").write_text(json.dumps(manifest,indent=2)+"\n")
           PY
 
