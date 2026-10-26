@@ -3,7 +3,7 @@ import path from "node:path";
 
 async function main() {
 const root = process.cwd();
-const outputPath = "/Users/brandon.baek/.codex/visualizations/2026/09/03/01a0682e-5ec7-7971-bf91-9d759ad8b8fc/govguide-knowledge-graph.html";
+const outputPath = path.join(root, "data/generated/govroute-knowledge-graph.html");
 const graph = JSON.parse(await readFile(path.join(root, "data/generated/graph.json"), "utf8"));
 const gnn = JSON.parse(await readFile(path.join(root, "data/generated/gnn-neighbors.json"), "utf8"));
 const nodes = graph.nodes.map((node: { id: string; kind: string; label: string }) => ({ id: node.id, kind: node.kind, label: node.label }));
@@ -14,8 +14,8 @@ for (const suggestion of gnn.suggestions.slice(0, 12)) {
 }
 const data = JSON.stringify({ nodes, links });
 
-const fragment = `<div id="govguide-network">
-  <h2>GovGuide knowledge graph</h2>
+const fragment = `<div id="govroute-network">
+  <h2>Govroute knowledge graph</h2>
   <div class="viz-row text-small text-muted" aria-label="Graph totals">
     <span><strong class="tabular-nums">${nodes.length}</strong> nodes</span>
     <span><strong class="tabular-nums">${graph.edges.length}</strong> verified edges</span>
@@ -29,44 +29,44 @@ const fragment = `<div id="govguide-network">
   </div>
   <div class="gg-legend" aria-label="Toggle node types"></div>
   <div class="gg-stage">
-    <svg role="img" aria-labelledby="gg-title gg-desc"><title id="gg-title">GovGuide evidence network</title><desc id="gg-desc">An interactive network of journeys, ordered steps, official source pages, government publishers, and review-only GNN relationship suggestions.</desc></svg>
+    <svg role="img" aria-labelledby="gg-title gg-desc"><title id="gg-title">Govroute evidence network</title><desc id="gg-desc">An interactive network of journeys, ordered steps, official source pages, government publishers, and review-only GNN relationship suggestions.</desc></svg>
     <div class="tooltip" role="tooltip" hidden></div>
   </div>
   <p class="gg-selected text-small" aria-live="polite">Select a node to inspect its immediate evidence neighborhood.</p>
 </div>
 <style>
-  #govguide-network { width: 100%; color: var(--foreground); }
-  #govguide-network h2 { margin-bottom: .35rem; }
-  #govguide-network .viz-row { gap: 1rem; justify-content: flex-start; margin-bottom: .8rem; }
-  #govguide-network .viz-row strong { color: var(--foreground); font-weight: 500; }
-  #govguide-network .viz-controls { margin-block: .7rem .5rem; }
-  #govguide-network .form-label { min-width: min(100%, 320px); }
-  #govguide-network .gg-legend { display: flex; flex-wrap: wrap; gap: .25rem .9rem; margin-block: .4rem .6rem; }
-  #govguide-network .gg-legend button { display: inline-flex; align-items: center; gap: .35rem; border: 0; background: transparent; color: var(--foreground); padding: .3rem 0; font: inherit; cursor: pointer; }
-  #govguide-network .gg-legend button[aria-pressed="false"] { color: var(--muted-foreground); text-decoration: line-through; }
-  #govguide-network .gg-swatch { width: .65rem; height: .65rem; border-radius: 50%; background: var(--swatch); }
-  #govguide-network .gg-swatch[data-edge="true"] { width: 1.1rem; height: 0; border-radius: 0; border-top: 2px dashed var(--viz-series-6); background: transparent; }
-  #govguide-network .gg-stage { position: relative; width: 100%; }
-  #govguide-network svg { display: block; width: 100%; min-height: 440px; border: 1px solid var(--border); background: color-mix(in srgb, var(--card) 28%, transparent); touch-action: none; }
-  #govguide-network .gg-link { stroke: var(--border); stroke-width: 1; opacity: .52; }
-  #govguide-network .gg-link[data-predicted="true"] { stroke: var(--viz-series-6); stroke-width: 1.4; stroke-dasharray: 4 4; opacity: .8; }
-  #govguide-network .gg-node { cursor: pointer; stroke: var(--background); stroke-width: 1.5; }
-  #govguide-network .gg-node[data-kind="journey"] { fill: var(--viz-series-1); }
-  #govguide-network .gg-node[data-kind="step"] { fill: var(--viz-series-2); }
-  #govguide-network .gg-node[data-kind="source"] { fill: var(--viz-series-3); }
-  #govguide-network .gg-node[data-kind="agency"] { fill: var(--viz-series-4); }
-  #govguide-network .gg-node[data-kind="program"], #govguide-network .gg-node[data-kind="requirement"] { fill: var(--viz-series-5); }
-  #govguide-network .gg-node.is-muted, #govguide-network .gg-link.is-muted { opacity: .07; }
-  #govguide-network .gg-node.is-neighbor { stroke: var(--foreground); stroke-width: 2.5; }
-  #govguide-network .gg-label { fill: var(--foreground); font-size: 12px; font-weight: 500; pointer-events: none; paint-order: stroke; stroke: var(--background); stroke-width: 3px; stroke-linejoin: round; }
-  #govguide-network .gg-selected { min-height: 1.5rem; margin-top: .55rem; color: var(--muted-foreground); }
-  #govguide-network .tooltip { position: absolute; max-width: 260px; pointer-events: none; background: var(--popover); color: var(--popover-foreground); border: 1px solid var(--border); padding: .45rem .55rem; z-index: 2; }
-  @media (max-width: 520px) { #govguide-network svg { min-height: 520px; } #govguide-network .gg-legend { gap-inline: .65rem; } }
+  #govroute-network { width: 100%; color: var(--foreground); }
+  #govroute-network h2 { margin-bottom: .35rem; }
+  #govroute-network .viz-row { gap: 1rem; justify-content: flex-start; margin-bottom: .8rem; }
+  #govroute-network .viz-row strong { color: var(--foreground); font-weight: 500; }
+  #govroute-network .viz-controls { margin-block: .7rem .5rem; }
+  #govroute-network .form-label { min-width: min(100%, 320px); }
+  #govroute-network .gg-legend { display: flex; flex-wrap: wrap; gap: .25rem .9rem; margin-block: .4rem .6rem; }
+  #govroute-network .gg-legend button { display: inline-flex; align-items: center; gap: .35rem; border: 0; background: transparent; color: var(--foreground); padding: .3rem 0; font: inherit; cursor: pointer; }
+  #govroute-network .gg-legend button[aria-pressed="false"] { color: var(--muted-foreground); text-decoration: line-through; }
+  #govroute-network .gg-swatch { width: .65rem; height: .65rem; border-radius: 50%; background: var(--swatch); }
+  #govroute-network .gg-swatch[data-edge="true"] { width: 1.1rem; height: 0; border-radius: 0; border-top: 2px dashed var(--viz-series-6); background: transparent; }
+  #govroute-network .gg-stage { position: relative; width: 100%; }
+  #govroute-network svg { display: block; width: 100%; min-height: 440px; border: 1px solid var(--border); background: color-mix(in srgb, var(--card) 28%, transparent); touch-action: none; }
+  #govroute-network .gg-link { stroke: var(--border); stroke-width: 1; opacity: .52; }
+  #govroute-network .gg-link[data-predicted="true"] { stroke: var(--viz-series-6); stroke-width: 1.4; stroke-dasharray: 4 4; opacity: .8; }
+  #govroute-network .gg-node { cursor: pointer; stroke: var(--background); stroke-width: 1.5; }
+  #govroute-network .gg-node[data-kind="journey"] { fill: var(--viz-series-1); }
+  #govroute-network .gg-node[data-kind="step"] { fill: var(--viz-series-2); }
+  #govroute-network .gg-node[data-kind="source"] { fill: var(--viz-series-3); }
+  #govroute-network .gg-node[data-kind="agency"] { fill: var(--viz-series-4); }
+  #govroute-network .gg-node[data-kind="program"], #govroute-network .gg-node[data-kind="requirement"] { fill: var(--viz-series-5); }
+  #govroute-network .gg-node.is-muted, #govroute-network .gg-link.is-muted { opacity: .07; }
+  #govroute-network .gg-node.is-neighbor { stroke: var(--foreground); stroke-width: 2.5; }
+  #govroute-network .gg-label { fill: var(--foreground); font-size: 12px; font-weight: 500; pointer-events: none; paint-order: stroke; stroke: var(--background); stroke-width: 3px; stroke-linejoin: round; }
+  #govroute-network .gg-selected { min-height: 1.5rem; margin-top: .55rem; color: var(--muted-foreground); }
+  #govroute-network .tooltip { position: absolute; max-width: 260px; pointer-events: none; background: var(--popover); color: var(--popover-foreground); border: 1px solid var(--border); padding: .45rem .55rem; z-index: 2; }
+  @media (max-width: 520px) { #govroute-network svg { min-height: 520px; } #govroute-network .gg-legend { gap-inline: .65rem; } }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 <script>
 (() => {
-  const root = document.getElementById('govguide-network');
+  const root = document.getElementById('govroute-network');
   const raw = ${data};
   const kinds = ['journey','step','source','agency'];
   const kindNames = { journey:'Journeys', step:'Ordered steps', source:'Official sources', agency:'Publishers' };

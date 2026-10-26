@@ -9,8 +9,8 @@ const nextConfig: NextConfig = {
   output: process.env.VERCEL ? undefined : "standalone",
   serverExternalPackages: ["better-sqlite3"],
   outputFileTracingIncludes: {
-    "/api/plan/recheck": ["./database/migrations/**/*", "./data/govguide.db", ...registryFiles],
-    "/api/chat": ["./database/migrations/**/*", "./data/govguide.db", ...registryFiles],
+    "/api/plan/recheck": ["./database/migrations/**/*", "./data/govroute.db", ...registryFiles],
+    "/api/chat": ["./database/migrations/**/*", "./data/govroute.db", ...registryFiles],
     "/api/places": registryFiles,
     "/api/local-resources": registryFiles,
     "/api/processes": registryFiles,
@@ -19,8 +19,8 @@ const nextConfig: NextConfig = {
     "/api/location/workspace": registryFiles,
     "/api/coverage": registryFiles,
     "/guides/*": registryFiles,
-    "/api/catalog": ["./data/govguide.db"],
-    "/graph": ["./data/govguide.db"],
+    "/api/catalog": ["./data/govroute.db"],
+    "/graph": ["./data/govroute.db"],
     "/data": registryFiles
   },
   outputFileTracingExcludes: process.env.GOVROUTE_BUNDLE_REGISTRY === "true"

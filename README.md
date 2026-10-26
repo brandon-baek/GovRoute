@@ -59,7 +59,7 @@ A reviewed step without a `supported-by` edge is invalid. Discovered guides can 
 
 ## Database
 
-The default database is `data/govguide.db`. The migration in `database/migrations/001_initial.sql` creates:
+The default database is `data/govroute.db`. The migration in `database/migrations/001_initial.sql` creates:
 
 - `graph_nodes` and `graph_edges`
 - `journeys`, `journey_steps`, `sources`, and `step_sources`
@@ -73,18 +73,18 @@ Set `GOVROUTE_DB_PATH` to use a different file. The schema uses conservative SQL
 
 The GitHub Actions workflow in `.github/workflows/data-refresh.yml` runs on the 1st and 15th of each month, or can be started with **Actions → Govroute data refresh → Run workflow**. It refreshes official directories, advances through rotating federal and state domain batches, prioritizes unseen action-oriented pages while reserving capacity for the oldest previously indexed pages, generates `data/generated/discovered-guides.json`, checks curated links, validates SQLite, and builds the Vercel configuration. SAM.gov ingestion is included when the optional `SAM_API_KEY` repository secret is present.
 
-After every check succeeds, the workflow commits only `data/govguide.db` and generated source-index reports to `main`. Keep the GitHub repository connected to the Vercel project with `main` as its production branch; Vercel then deploys the refreshed read-only database snapshot. No hosted database or Vercel API token is needed. On Vercel, the SQLite connection opens read-only because function filesystems are not durable storage.
+After every check succeeds, the workflow commits only `data/govroute.db` and generated source-index reports to `main`. Keep the GitHub repository connected to the Vercel project with `main` as its production branch; Vercel then deploys the refreshed read-only database snapshot. No hosted database or Vercel API token is needed. On Vercel, the SQLite connection opens read-only because function filesystems are not durable storage.
 
 Crawler output stays marked `machine-indexed` and appears publicly as a discovered guide. It can be browsed, matched, graphed, and opened at a permanent URL, while reviewed steps remain a separate trust level. Pages with too little useful content remain visible inside Govroute but are kept out of the XML sitemap until they meet the search-quality gate. All crawls, guide export, SQLite integrity, native SQLite load, and production build must succeed before the workflow pushes data.
 
 ### Why SQLite for the MVP?
 
-SQLite is an intentional MVP choice, not a placeholder masquerading as a database. Govroute's current workload is read-heavy, the reviewed dataset fits comfortably in one relational file, and the app does not yet need multiple servers writing concurrently. SQLite gives the prototype real foreign keys, transactions, indexes, full-text search, migrations, and integrity checks without requiring a cloud database account during a classroom demonstration. It also makes the result reproducible: a teacher can open the exact populated database in `data/govguide.db` instead of depending on a remote service. The tables and constraints are kept portable so the project can move to PostgreSQL when hosting, concurrent writes, or larger-scale ingestion makes that operational complexity worthwhile.
+SQLite is an intentional MVP choice, not a placeholder masquerading as a database. Govroute's current workload is read-heavy, the reviewed dataset fits comfortably in one relational file, and the app does not yet need multiple servers writing concurrently. SQLite gives the prototype real foreign keys, transactions, indexes, full-text search, migrations, and integrity checks without requiring a cloud database account during a classroom demonstration. It also makes the result reproducible: a teacher can open the exact populated database in `data/govroute.db` instead of depending on a remote service. The tables and constraints are kept portable so the project can move to PostgreSQL when hosting, concurrent writes, or larger-scale ingestion makes that operational complexity worthwhile.
 
 To inspect the populated database directly:
 
 ```bash
-sqlite3 data/govguide.db
+sqlite3 data/govroute.db
 .tables
 SELECT kind, COUNT(*) FROM graph_nodes GROUP BY kind;
 SELECT relation, COUNT(*) FROM graph_edges GROUP BY relation;

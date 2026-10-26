@@ -268,7 +268,7 @@ def export_discovered_guides(database: sqlite3.Connection, output: Path) -> int:
 
 if __name__ == "__main__":
     root = Path(__file__).resolve().parents[1]
-    database_path = Path(sys.argv[1]) if len(sys.argv) > 1 else root / "data/govguide.db"
+    database_path = Path(sys.argv[1]) if len(sys.argv) > 1 else root / "data/govroute.db"
     output_path = Path(sys.argv[2]) if len(sys.argv) > 2 else root / "data/generated/discovered-guides.json"
     connection = sqlite3.connect(database_path)
     try:
