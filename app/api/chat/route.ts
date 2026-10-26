@@ -10,6 +10,8 @@ import { retrieveDiscoveredGuides } from "@/lib/discovered-guides";
 import { consumeRequest, consumeAIRoute } from "@/lib/request-limits";
 import { stateByCode, statesInText } from "@/lib/jurisdictions";
 import { contextForAddress, contextForPlaces, relevantLegalSources } from "@/lib/place-registry";
+import { buildAddressWorkspace } from "@/lib/address-workspace";
+import type { CensusMatch } from "@/lib/place-context";
 import { resolveAddress } from "@/lib/address-resolver";
 import { parcelRequirements, requiresParcelEvidence } from "@/lib/place-context";
 import { processJourneys, processPublications } from "@/lib/process-catalog";
@@ -67,14 +69,17 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const addressMapTask=/\b(flood(?:ing|plain)?|school district|school enrollment)\b/i.test(body.message);
     const needsCounty=["building_permit","property","public_property_repair"].includes(taskTopic(body.message)??"") || requiresParcelEvidence(body.message);
-    const recheckAddress=Boolean(body.locationAddress) && needsCounty;
+    let verifiedAddressMatch: CensusMatch | undefined;
+    const recheckAddress=Boolean(body.locationAddress) && (needsCounty || addressMapTask);
     let context = body.placeIds?.length ? await contextForPlaces(body.placeIds,"community",[],needsCounty && !recheckAddress) : undefined;
     if(recheckAddress) {
       try {
         const matches=await resolveAddress(body.locationAddress!);
         if(matches.length!==1)return NextResponse.json({status:"clarify",message:"Confirm one address match using the location lookup before continuing.",alternatives:[]},{headers:{"Cache-Control":"no-store, private"}});
         context=await contextForAddress(matches[0]);
+        verifiedAddressMatch=matches[0];
       } catch {return NextResponse.json({status:"clarify",message:"Address verification is unavailable. Try again or clear the address and select a community.",alternatives:[]},{headers:{"Cache-Control":"no-store, private"}});}
     }
     if (body.placeIds?.length && body.placeIds.some(id => !context?.places.some(place => place.id === id))) return NextResponse.json({ status: "clarify", message: "Your selected place is unavailable. Search for the location again or choose a state.", alternatives: [] });
@@ -104,6 +109,10 @@ export async function POST(request: NextRequest) {
     const selectedIds=recheckAddress?context?.places.map(p=>p.id)??[]:body.placeIds??[];
     const scopedIds=publicationPlaceIds(context,selectedIds);
     const processes = await publishedProcesses(location, scopedIds, context);
+    if (verifiedAddressMatch && (requiresParcelEvidence(body.message) || addressMapTask)) {
+      const workspace=await buildAddressWorkspace(verifiedAddressMatch);
+      return NextResponse.json({status:"address_guidance",message:"Here are the map findings and next actions for your selected address.",workspace,alternatives:[]},{headers:{"Cache-Control":"no-store, private","Referrer-Policy":"no-referrer"}});
+    }
     if (requiresParcelEvidence(body.message) && !isPropertyLookup(body.message)) {
       const existingSources = await relevantLegalSources(scopedIds, "property");
       const propertyIds=new Set(processPublications.filter(item=>item.topic==="property").map(item=>item.journey.id));

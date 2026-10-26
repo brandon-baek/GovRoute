@@ -59,7 +59,7 @@ export function LocationPicker({ state, onChange }: { state: string; onChange: (
           onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); void search(); } }} />
         <button type="button" disabled={loading || query.trim().length < (mode === "place" ? 2 : 8)} onClick={() => void search()}>{loading ? "Looking up…" : "Look up"}</button>
       </div>
-      {mode === "address" && <p className="privacy-note">Your address is sent to the US Census geocoder for lookup and rechecked when you request location-based guidance. Govroute does not save it or send it to the AI router. Address matches do not verify parcel boundaries.</p>}
+      {mode === "address" && <p className="privacy-note">Your address is sent to the US Census geocoder for lookup and rechecked when you request location-based guidance. Govroute does not save it or send it to the AI router. Build an address report below to check official flood, school-district, and supported local property layers. Those checks send matched coordinates to the map providers. Address matches do not verify parcel boundaries.</p>}
       <div aria-live="polite">
         {message && <p>{message}</p>}
         {places.length > 0 && <ul className="place-options">{places.map((place) => <li key={`${place.id}:${place.matched_name}`}>
