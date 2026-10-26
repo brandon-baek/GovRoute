@@ -45,14 +45,14 @@ describe("address-specific map evidence and generated guides", () => {
     const urls: string[] = [];
     const report = await buildAddressWorkspace(address("36061"), async url => { urls.push(String(url)); return json({ features: [] }); });
     expect(urls).toHaveLength(1); expect(urls[0]).toContain("fema.gov"); expect(report.guides.some(g => g.id === "property")).toBe(false);
-    expect(report.guides.find(g => g.id === "schools")?.why).toContain("Example Unified");
+    expect(report.guides.find(g => g.id.startsWith("census:"))?.why).toContain("Example Unified");
   });
   it("keeps local findings when another provider fails", async () => {
     const report = await buildAddressWorkspace(address(), async url => {
       if (String(url).includes("fema")) throw new Error("timeout");
       return json({ features: [{ attributes: String(url).includes("LACounty_Parcel") ? { AIN: "1234567890", SitusFullAddress: "2809 FOOTHILL BLVD LA CRESCENTA CA" } : { ZONE: "R-2" } }] });
     });
-    expect(report.findings.find(f => f.id === "flood")?.status).toBe("unavailable"); expect(report.guides.find(g => g.id === "property")?.why).toContain("R-2");
+    expect(report.findings.find(f => f.id === "flood")?.status).toBe("unavailable"); expect(report.findings.find(f=>f.id==="parcel")?.values.AIN).toBe("1234567890");
     expect(JSON.stringify(report)).not.toContain("2809 FOOTHILL");
   });
   it("rejects invalid coordinates before contacting a provider", async () => {

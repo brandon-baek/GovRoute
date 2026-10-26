@@ -3,7 +3,7 @@ import type { CensusMatch } from "./place-context";
 
 export type AddressFinding = {
   id: string; label: string; status: "matched" | "no_match" | "unavailable" | "ambiguous";
-  values: Record<string, string>; candidates?: { id: string; label: string }[]; source: string; publisher: string; checkedAt: string; note: string;
+  values: Record<string, string>; candidates?: { id: string; label: string }[]; matches?: Record<string,string>[]; source: string; publisher: string; checkedAt: string; note: string;
 };
 export type AddressGuide = {
   id: string; title: string; why: string;
@@ -41,7 +41,7 @@ export async function pointFinding(id: keyof typeof addressLayers, match: Census
     const response = await fetcher(layer.url + "/query", {
       method: "POST", cache: "no-store", redirect: "error", signal: AbortSignal.timeout(7000),
       body: new URLSearchParams({ f: "json", where: "1=1", geometry: polygon ? JSON.stringify(polygon) : x + "," + y, geometryType: polygon ? "esriGeometryPolygon" : "esriGeometryPoint", inSR: "4326",
-        spatialRel: "esriSpatialRelIntersects", outFields: layer.fields.join(","), returnGeometry: "false", resultRecordCount: "5" })
+        spatialRel: polygon?"esriSpatialRelRelation":"esriSpatialRelIntersects", ...(polygon?{relationParam:"T********"}:{}), outFields: layer.fields.join(","), returnGeometry: "false", resultRecordCount: "5" })
     });
     const data = await boundedJson(response);
     if (!isRecord(data) || data.error || data.exceededTransferLimit || !Array.isArray(data.features)) throw new Error("Incomplete map response");
@@ -59,7 +59,7 @@ export async function pointFinding(id: keyof typeof addressLayers, match: Census
       return result;
     });
     const distinct = [...new Map(candidates.map(c => [JSON.stringify(c), c])).values()];
-    if (distinct.length !== 1) return { ...base, status: "ambiguous", note: "Multiple map records intersect the point. Confirm the location in the official map; no record was selected." };
+    if (distinct.length !== 1) return { ...base, status: "ambiguous", matches:distinct.slice(0,5), note: "Multiple map records intersect the selected geometry. Confirm the location in the official map; no record was selected." };
     return { ...base, status: "matched", values: distinct[0], note: polygon ? "Official map intersection with the candidate parcel polygon. Confirm the parcel identity; overlapping zones are not resolved automatically." : "Live official map intersection at an address-range point. Confirm the actual parcel and boundaries before acting." };
   } catch {
     return { ...base, status: "unavailable", note: "The official map service could not be read. No conclusion was inferred; use the official lookup below." };
@@ -172,14 +172,13 @@ export function assembleAddressGuides(findings: AddressFinding[]): AddressGuide[
       ]
     });
   }
-  if (schools.length) guides.push({ id: "schools", title: "Find enrollment instructions for the district at this address",
-    why: schools.map(f => f.values.name).join("; "), steps: [
-      { title: "Confirm the district and attendance boundary", detail: "Use the named district's official address locator or enrollment office. Elementary, secondary, and unified districts may overlap. District membership does not identify an assigned campus or guarantee enrollment.",
-        url: "https://nces.ed.gov/ccd/districtsearch/" },
-      { title: "Get the district's enrollment checklist", detail: "Ask the confirmed district which school serves your grade and address, what residence and student records to prepare, and how to apply. Submit personal records only through the district's official channel.",
-        url: "https://nces.ed.gov/ccd/districtsearch/" }
-    ]
-  });
+  for(const school of schools) {
+    const url=/^[0-9]{7}$/.test(school.values.GEOID??"")?"https://nces.ed.gov/ccd/districtsearch/district_detail.asp?ID2="+school.values.GEOID:"https://nces.ed.gov/ccd/districtsearch/";
+    guides.push({id:school.id,title:"Enroll through "+school.values.name,why:"Census places the matched address point in "+school.values.name+". Confirm the actual residence and attendance boundary with the district.",steps:[
+      {title:"Open this district's official directory record",detail:"The NCES record identifies the district's website and contact details. Use that district's enrollment office or address locator to confirm the assigned campus and grade coverage.",url},
+      {title:"Request the district's enrollment checklist",detail:"Ask this district which school serves your grade and address, what residence and student records to prepare, and how to apply. District geography does not guarantee enrollment or determine an assigned school.",url}
+    ]});
+  }
   return guides;
 }
 export async function buildAddressWorkspace(match: CensusMatch, fetcher: typeof fetch = fetch, selectedParcel?: string): Promise<AddressWorkspace> {
