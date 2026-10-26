@@ -4,6 +4,7 @@ const fixtures=vi.hoisted(()=>({city:false}));
 vi.mock("@/lib/request-limits",()=>({consumeRequest:()=>true,consumeAIRoute:()=>false}));
 vi.mock("@/lib/database",()=>({getStoredJourneys:()=>({journeys:[],storage:"fixture"})}));
 vi.mock("@/lib/discovered-guides",()=>({discoveredGuides:[],retrieveDiscoveredGuides:()=>[]}));
+vi.mock("@/lib/local-live-sources",()=>({liveAddressSources:async()=>[]}));
 vi.mock("@/lib/local-resources",()=>({localResources:async()=>[]}));
 vi.mock("@/lib/place-registry",()=>({
   contextForPlaces:async()=>({places:[{id:"community",kind:"cdp",state_code:"CA",government_status:"none"},{id:"county",kind:"county",state_code:"CA",government_status:"active"}],relations:[],authorities:[],unresolved:[],precision:"community"}),
