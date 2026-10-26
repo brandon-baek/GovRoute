@@ -32,7 +32,7 @@ async function boundedJson(response: Response): Promise<unknown> {
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
-export async function pointFinding(id: keyof typeof addressLayers, match: CensusMatch, fetcher: typeof fetch = fetch): Promise<AddressFinding> {
+export async function pointFinding(id: keyof typeof addressLayers, match: CensusMatch, fetcher: typeof fetch = fetch, polygon?: { rings: number[][][] }): Promise<AddressFinding> {
   const layer = addressLayers[id];
   const base = { id, label: layer.label, values: {}, source: layer.url, publisher: layer.publisher, checkedAt: new Date().toISOString() };
   const { x, y } = match.coordinates;
@@ -40,7 +40,7 @@ export async function pointFinding(id: keyof typeof addressLayers, match: Census
   try {
     const response = await fetcher(layer.url + "/query", {
       method: "POST", cache: "no-store", redirect: "error", signal: AbortSignal.timeout(7000),
-      body: new URLSearchParams({ f: "json", where: "1=1", geometry: x + "," + y, geometryType: "esriGeometryPoint", inSR: "4326",
+      body: new URLSearchParams({ f: "json", where: "1=1", geometry: polygon ? JSON.stringify(polygon) : x + "," + y, geometryType: polygon ? "esriGeometryPolygon" : "esriGeometryPoint", inSR: "4326",
         spatialRel: "esriSpatialRelIntersects", outFields: layer.fields.join(","), returnGeometry: "false", resultRecordCount: "5" })
     });
     const data = await boundedJson(response);
@@ -60,11 +60,50 @@ export async function pointFinding(id: keyof typeof addressLayers, match: Census
     });
     const distinct = [...new Map(candidates.map(c => [JSON.stringify(c), c])).values()];
     if (distinct.length !== 1) return { ...base, status: "ambiguous", note: "Multiple map records intersect the point. Confirm the location in the official map; no record was selected." };
-    return { ...base, status: "matched", values: distinct[0], note: "Live official map intersection at an address-range point. Confirm the actual parcel and boundaries before acting." };
+    return { ...base, status: "matched", values: distinct[0], note: polygon ? "Official map intersection with the candidate parcel polygon. Confirm the parcel identity; overlapping zones are not resolved automatically." : "Live official map intersection at an address-range point. Confirm the actual parcel and boundaries before acting." };
   } catch {
     return { ...base, status: "unavailable", note: "The official map service could not be read. No conclusion was inferred; use the official lookup below." };
   }
 }
+
+function normalizedStreet(value: string) {
+  return value.toUpperCase().replace(/[^A-Z0-9 -]/g, " ").replace(/\bBOULEVARD\b/g,"BLVD").replace(/\bAVENUE\b/g,"AVE").replace(/\bSTREET\b/g,"ST").replace(/\bROAD\b/g,"RD").replace(/\bDRIVE\b/g,"DR").replace(/\bLANE\b/g,"LN").replace(/\s+/g," ").trim();
+}
+export async function parcelByAddress(match: CensusMatch, fetcher: typeof fetch = fetch): Promise<{ finding: AddressFinding; polygon?: { rings: number[][][] } }> {
+  const layer=addressLayers.parcel;
+  const base={id:"parcel",label:"Candidate assessor parcel",values:{},source:layer.url,publisher:layer.publisher,checkedAt:new Date().toISOString()};
+  const street=normalizedStreet(match.matchedAddress.split(",")[0]);
+  if(!/^[0-9][A-Z0-9 -]{4,120}$/.test(street)) return {finding:{...base,status:"no_match",note:"The street address could not be matched conservatively to assessor records. Use the official parcel lookup."}};
+  try {
+    // Only a bounded, normalized Census street is used; no raw SQL or URL comes from the visitor.
+    // Situs may include a city/ZIP, so compare a prefix and validate each returned street again.
+    const response=await fetcher(layer.url+"/query",{
+      method:"POST",cache:"no-store",redirect:"error",signal:AbortSignal.timeout(7000),
+      body:new URLSearchParams({f:"json",where:"UPPER(SitusFullAddress) LIKE '"+street+"%'",outFields:"AIN,APN,SitusFullAddress",returnGeometry:"true",outSR:"4326",resultRecordCount:"10"})
+    });
+    const data=await boundedJson(response);
+    if(!isRecord(data)||data.error||data.exceededTransferLimit||!Array.isArray(data.features))throw new Error();
+    const candidates=data.features.filter((f:unknown)=>{
+      if(!isRecord(f)||!isRecord(f.attributes)||typeof f.attributes.SitusFullAddress!=="string")throw new Error();
+      const candidate=normalizedStreet(f.attributes.SitusFullAddress);
+      return candidate===street||candidate.startsWith(street+" ");
+    }) as {attributes:Record<string,unknown>;geometry?:{rings?:unknown}}[];
+    if(!candidates.length)return {finding:{...base,status:"no_match",note:"No assessor street-address record matched. A road-range point is not a substitute for a parcel match."}};
+    const keyed=new Map<string,typeof candidates[number]>();
+    for(const f of candidates) {
+      const id=typeof f.attributes.AIN==="string"?f.attributes.AIN:typeof f.attributes.APN==="string"?f.attributes.APN:null;
+      if(!id||!/^[0-9-]{5,20}$/.test(id))throw new Error();
+      keyed.set(id,f);
+    }
+    if(keyed.size!==1)return {finding:{...base,status:"ambiguous",note:"This street address matches multiple assessor parcels. Select the actual property in the official map; none was chosen automatically."}};
+    const feature=[...keyed.values()][0];const values:Record<string,string>={};
+    for(const key of ["AIN","APN"])if(typeof feature.attributes[key]==="string")values[key]=String(feature.attributes[key]).slice(0,30);
+    const raw=feature.geometry?.rings;
+    const valid=Array.isArray(raw)&&raw.length>0&&raw.length<=100&&raw.every(r=>Array.isArray(r)&&r.length>=4&&r.length<=10000&&r.every(p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)&&Math.abs(p[0])<=180&&Math.abs(p[1])<=90));
+    return {finding:{...base,status:"matched",values,note:"One assessor parcel matched the Census street address. Confirm it against your records; unit-level identity and ownership have not been established."},polygon:valid?{rings:raw as number[][][]}:undefined};
+  }catch{return {finding:{...base,status:"unavailable",note:"The assessor address lookup was unavailable or incomplete. Use the official parcel lookup; no parcel was inferred."}};}
+}
+
 export function addressGeographies(match: CensusMatch): AddressFinding[] {
   return Object.entries(match.geographies).filter(([layer]) => /school district|counties|incorporated places/i.test(layer))
     .flatMap(([layer, rows]) => rows.filter(r => typeof r.NAME === "string" && typeof r.GEOID === "string").map(r => ({
@@ -85,7 +124,7 @@ export function assembleAddressGuides(findings: AddressFinding[]): AddressGuide[
       : "This address is in Los Angeles County. Resolve the parcel and planning jurisdiction before starting a project.",
     steps: [
       { title: "Confirm the actual parcel", detail: parcel?.status === "matched"
-          ? "The point intersects candidate parcel " + (parcel.values.APN ?? parcel.values.AIN) + ". Compare it with property records: a street interpolation may land on a neighboring parcel or road."
+          ? "The lookup returned candidate parcel " + (parcel.values.APN ?? parcel.values.AIN) + ". Compare it with property records: a street interpolation may land on a neighboring parcel or road."
           : "No single parcel was confirmed by the map lookup. Search the official map by the street address, then compare with property records.",
         url: "https://portal.assessor.lacounty.gov/" },
       { title: "Confirm zoning and the responsible planning office", detail: zoning?.status === "matched"
@@ -124,8 +163,14 @@ export function assembleAddressGuides(findings: AddressFinding[]): AddressGuide[
 }
 export async function buildAddressWorkspace(match: CensusMatch, fetcher: typeof fetch = fetch): Promise<AddressWorkspace> {
   const inLA = Object.entries(match.geographies).some(([layer, rows]) => /counties/i.test(layer) && rows.some(r => r.GEOID === "06037"));
-  const ids: (keyof typeof addressLayers)[] = inLA ? ["flood", "parcel", "zoning"] : ["flood"];
-  const findings = [...addressGeographies(match), ...await Promise.all(ids.map(id => pointFinding(id, match, fetcher)))];
+  const floodPromise=pointFinding("flood",match,fetcher);
+  const local:AddressFinding[]=[];
+  if(inLA) {
+    const parcel=await parcelByAddress(match,fetcher);
+    local.push(parcel.finding);
+    local.push(await pointFinding("zoning",match,fetcher,parcel.polygon));
+  }
+  const findings=[...addressGeographies(match),await floodPromise,...local];
   return { checkedAt: new Date().toISOString(), precision: "address_range", findings, guides: assembleAddressGuides(findings), limitations: [
     "Census interpolates along an address range. This is not a rooftop, parcel survey, ownership check, or legal determination.",
     "Point-specific zoning and parcel adapters currently cover Los Angeles County. FEMA screening is attempted nationally; official data and service availability vary.",

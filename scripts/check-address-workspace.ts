@@ -6,7 +6,7 @@ async function main() {
   // Public civic addresses only; no resident information is logged.
   const cases = [
     { name: "LA County public library", address: "2809 Foothill Boulevard, La Crescenta, CA 91214", local: true },
-    { name: "New York City Hall", address: "260 Broadway, New York, NY 10007", local: false }
+    { name: "White House visitor address", address: "1600 Pennsylvania Avenue NW, Washington, DC 20500", local: false }
   ];
   const results: unknown[] = [];
   for (const item of cases) {

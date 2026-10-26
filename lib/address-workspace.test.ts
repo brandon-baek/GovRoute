@@ -1,10 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { assembleAddressGuides, buildAddressWorkspace, pointFinding } from "./address-workspace";
+import { assembleAddressGuides, buildAddressWorkspace, pointFinding, parcelByAddress } from "./address-workspace";
 import type { CensusMatch } from "./place-context";
-const address = (county = "06037"): CensusMatch => ({ matchedAddress: "PUBLIC EXAMPLE", coordinates: { x: -118.24, y: 34.21 }, geographies: { Counties: [{ GEOID: county, NAME: county === "06037" ? "Los Angeles County" : "Other County" }], "Unified School Districts": [{ GEOID: "0615720", NAME: "Example Unified" }] } });
+const address = (county = "06037"): CensusMatch => ({ matchedAddress: "2809 FOOTHILL BLVD, LA CRESCENTA, CA, 91214", coordinates: { x: -118.24, y: 34.21 }, geographies: { Counties: [{ GEOID: county, NAME: county === "06037" ? "Los Angeles County" : "Other County" }], "Unified School Districts": [{ GEOID: "0615720", NAME: "Example Unified" }] } });
 const json = (data: unknown) => new Response(JSON.stringify(data));
 const fetcher = (data: unknown): typeof fetch => async () => json(data);
 describe("address-specific map evidence and generated guides", () => {
+  it("resolves a street-address parcel and uses its polygon for zoning",async()=>{
+    const calls:string[]=[];
+    const report=await buildAddressWorkspace(address(),async(url,init)=>{
+      const params=new URLSearchParams(String(init?.body));calls.push(params.get("geometryType")??"address");
+      if(String(url).includes("/12/"))return json({features:[{attributes:{AIN:"1234567890",SitusFullAddress:"2809 FOOTHILL BLVD LA CRESCENTA CA"},geometry:{rings:[[[-118,34],[-118.001,34],[-118.001,34.001],[-118,34]]]}}]});
+      return json({features:[{attributes:String(url).includes("/4/")?{ZONE:"R-1"}:{FLD_ZONE:"X"}}]});
+    });
+    expect(calls).toContain("esriGeometryPolygon");expect(report.findings.find(f=>f.id==="parcel")?.status).toBe("matched");
+    expect(JSON.stringify(report)).not.toContain("2809 FOOTHILL");
+  });
+  it("does not choose between multiple assessor parcels or a similar street name",async()=>{
+    expect((await parcelByAddress(address(),fetcher({features:[{attributes:{AIN:"1234567890",SitusFullAddress:"2809 FOOTHILL BLVD"}},{attributes:{AIN:"1234567891",SitusFullAddress:"2809 FOOTHILL BLVD"}}]}))).finding.status).toBe("ambiguous");
+    expect((await parcelByAddress(address(),fetcher({features:[{attributes:{AIN:"1234567890",SitusFullAddress:"2809 FOOTHILL BLVDOTHER"}}]}))).finding.status).toBe("no_match");
+  });
   it("queries reviewed endpoints with a point, never the street address", async () => {
     let called = ""; let params = "";
     const finding = await pointFinding("zoning", address(), async (url, init) => { called = String(url); params = String(init?.body); expect(init?.cache).toBe("no-store"); expect(init?.redirect).toBe("error"); return json({ features: [{ attributes: { ZONE: "R-1", Z_DESC: "Single family", PLNG_AREA: "Crescenta Valley" } }] }); });
@@ -36,10 +50,10 @@ describe("address-specific map evidence and generated guides", () => {
   it("keeps local findings when another provider fails", async () => {
     const report = await buildAddressWorkspace(address(), async url => {
       if (String(url).includes("fema")) throw new Error("timeout");
-      return json({ features: [{ attributes: String(url).includes("/12/") ? { AIN: "1234567890" } : { ZONE: "R-2" } }] });
+      return json({ features: [{ attributes: String(url).includes("/12/") ? { AIN: "1234567890", SitusFullAddress: "2809 FOOTHILL BLVD LA CRESCENTA CA" } : { ZONE: "R-2" } }] });
     });
     expect(report.findings.find(f => f.id === "flood")?.status).toBe("unavailable"); expect(report.guides.find(g => g.id === "property")?.why).toContain("R-2");
-    expect(JSON.stringify(report)).not.toContain("PUBLIC EXAMPLE");
+    expect(JSON.stringify(report)).not.toContain("2809 FOOTHILL");
   });
   it("rejects invalid coordinates before contacting a provider", async () => {
     const match = address(); match.coordinates.x = NaN;
