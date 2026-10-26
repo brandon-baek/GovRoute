@@ -32,7 +32,7 @@ async function download(value:string,domain:string,robots=false) {
 }
 export function parseOfficialPage(html:string,url:string,domain:string,task:string) {
   const $=cheerio.load(html);const topic=localTopics.find(t=>t.id===task||t.terms.some(term=>task.toLowerCase().includes(term)));
-  const terms=topic?.terms??localTopics.flatMap(t=>t.terms);
+  const terms=topic?[...topic.terms,...(topic.id==="building_permit"?["permit","building","planning"]:topic.id==="property"?["assessor","recorder","planning"]:[])]:localTopics.flatMap(t=>t.terms);
   const links=new Map<string,number>();
   $("a[href]").each((_,element)=>{try {const href=allowedOfficialUrl(new URL($(element).attr("href")!,url).href,domain).href;
     const text=($(element).text()+" "+href).toLowerCase();const score=terms.filter(term=>text.includes(term.replaceAll(" ","-"))||text.includes(term)).length;
@@ -44,14 +44,14 @@ export function parseOfficialPage(html:string,url:string,domain:string,task:stri
   return {title:title.slice(0,240),text:lines.join("\n").slice(0,120000),links:[...links].sort((a,b)=>b[1]-a[1]).map(([href])=>href).slice(0,2)};
 }
 const cache=new Map<string,{expires:number;promise:Promise<LocalEvidence[]>}>();
-async function inspectGovernment(resource:LocalResource,task:string):Promise<LocalEvidence[]> {
+async function inspectGovernment(resource:Pick<LocalResource,"url"|"publisher"|"placeName">,task:string):Promise<LocalEvidence[]> {
   const domain=new URL(resource.url).hostname.replace(/^www\./,"");
-  const key=domain+":"+task;const stored=cache.get(key);if(stored&&stored.expires>Date.now())return stored.promise;
+  const key=resource.url+":"+task;const stored=cache.get(key);if(stored&&stored.expires>Date.now())return stored.promise;
   if(cache.size>=100)cache.delete(cache.keys().next().value!);
   const promise=(async()=>{
     const robotPage=await download("https://"+domain+"/robots.txt",domain,true);const rules=robotsParser(robotPage.url,robotPage.text);
     const delay=rules.getCrawlDelay(agent)??0;if(delay>2)return [];
-    const root="https://"+domain+"/";if(rules.isAllowed(root,agent)===false)return [];
+    const root=allowedOfficialUrl(resource.url,domain).href;if(rules.isAllowed(root,agent)===false)return [];
     const home=await download(root,domain);const parsed=parseOfficialPage(home.text,home.url,domain,task);
     const pages=[{url:home.url,...parsed}];
     for(const href of parsed.links.filter(href=>href!==home.url).slice(0,2)) {
@@ -66,8 +66,8 @@ async function inspectGovernment(resource:LocalResource,task:string):Promise<Loc
   })().catch(()=>[]);
   cache.set(key,{expires:Date.now()+60*60*1000,promise});return promise;
 }
-export async function liveAddressSources(context:PlaceContext|undefined,task:string) {
+export async function liveAddressSources(context:PlaceContext|undefined,task:string,seeds:Pick<LocalResource,"url"|"publisher"|"placeName">[]=[]) {
   if(!task||!context?.places.length)return [];
-  const resources=(await localResources(context,task)).filter(r=>r.kind==="official_directory").slice(0,2);
+  const resources=[...seeds,...(await localResources(context,task)).filter(r=>r.kind==="official_directory")].filter((r,i,a)=>a.findIndex(other=>other.url===r.url)===i).slice(0,2);
   return (await Promise.all(resources.map(resource=>inspectGovernment(resource,task)))).flat().slice(0,6);
 }

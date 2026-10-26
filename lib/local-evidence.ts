@@ -81,7 +81,10 @@ export async function enrichAddressActions(context:PlaceContext|undefined,task="
   const actions=await addressLocalActions(context,task);
   if(task)try {
     const {liveAddressSources}=await import("@/lib/local-live-sources");
-    const fresh=await liveAddressSources(context,task);
+    const requested=localTopics.find(t=>t.id===task||t.terms.some(term=>task.toLowerCase().includes(term)));
+    const procedures=requested?actions.procedures.filter(j=>topicForPage(j.title,j.officialAction?.url??"").some(t=>t.id===requested.id)):actions.procedures;
+    const seeds=procedures.flatMap(j=>j.sources.map(source=>({url:source.url,publisher:source.publisher,placeName:context?.places.find(p=>p.kind==="county")?.name??"Selected area"}))).filter(s=>{try{return new URL(s.url).hostname.endsWith(".gov");}catch{return false;}});
+    const fresh=await liveAddressSources(context,task,seeds);
     const urls=new Set(fresh.map(page=>page.url));actions.evidence=[...fresh,...actions.evidence.filter(page=>!urls.has(page.url))].slice(0,12);
     actions.topics=localTopics.map(t=>({id:t.id,label:t.label,count:actions.evidence.filter(e=>e.topic===t.id).length}));
   }catch{/* Retained indexed evidence and published procedures remain usable. */}
