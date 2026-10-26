@@ -10,7 +10,7 @@ export type AddressGuide = {
   steps: { title: string; detail: string; url: string }[];
 };
 export type AddressWorkspace = {
-  localActions?: LocalActions; checkedAt: string; precision: "address_range"; findings: AddressFinding[]; guides: AddressGuide[]; limitations: string[];
+  map?: { longitude: number; latitude: number; parcelRings?: number[][][] }; localActions?: LocalActions; checkedAt: string; precision: "address_range"; findings: AddressFinding[]; guides: AddressGuide[]; limitations: string[];
 };
 // Audited connector endpoints, never visitor-controlled URLs.
 export const addressLayers = {
@@ -185,13 +185,15 @@ export async function buildAddressWorkspace(match: CensusMatch, fetcher: typeof 
   const inLA = Object.entries(match.geographies).some(([layer, rows]) => /counties/i.test(layer) && rows.some(r => r.GEOID === "06037"));
   const floodPromise=pointFinding("flood",match,fetcher);
   const local:AddressFinding[]=[];
+  let parcelRings:number[][][]|undefined;
   if(inLA) {
     const parcel=await parcelByAddress(match,fetcher,selectedParcel);
     local.push(parcel.finding);
+    parcelRings=parcel.polygon?.rings;
     local.push(parcel.finding.status==="matched"&&!parcel.polygon?{id:"zoning",label:addressLayers.zoning.label,source:addressLayers.zoning.url,publisher:addressLayers.zoning.publisher,checkedAt:new Date().toISOString(),status:"unavailable",values:{},note:"The selected parcel has no usable polygon. Zoning was not inferred from a different street point."}:await pointFinding("zoning",match,fetcher,parcel.polygon));
   }
   const findings=[...addressGeographies(match),await floodPromise,...local];
-  return { checkedAt: new Date().toISOString(), precision: "address_range", findings, guides: assembleAddressGuides(findings), limitations: [
+  return { map:{longitude:match.coordinates.x,latitude:match.coordinates.y,parcelRings}, checkedAt: new Date().toISOString(), precision: "address_range", findings, guides: assembleAddressGuides(findings), limitations: [
     "Census interpolates along an address range. This is not a rooftop, parcel survey, ownership check, or legal determination.",
     "Point-specific zoning and parcel adapters currently cover Los Angeles County. FEMA screening is attempted nationally; official data and service availability vary.",
     "Map findings are machine-retrieved screening evidence. No permission, fee, deadline, school assignment, or absence of risk is inferred from them."

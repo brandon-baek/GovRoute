@@ -1,4 +1,5 @@
 "use client";
+import { AddressVisual } from "@/components/LocationVisuals";
 import { useEffect, useState } from "react";
 import type { AddressWorkspace as Workspace } from "@/lib/address-workspace";
 const labels = { matched: "Map record found", no_match: "No map record returned", ambiguous: "Needs boundary confirmation", unavailable: "Service unavailable" };
@@ -30,7 +31,7 @@ export function AddressWorkspace({ address, initialReport }: { address: string; 
       {loading && <p role="status">Checking the address and official map layers. Unavailable layers will be shown separately.</p>}
       {error && <p role="alert">{error}</p>}
       {report && <>
-        <p className="address-precision">Address-range screening · Checked {new Date(report.checkedAt).toLocaleString()} · Confirm the actual property before acting</p>
+        <AddressVisual key={report.checkedAt} report={report} /><p className="address-precision">Address-range screening · Checked {new Date(report.checkedAt).toLocaleString()} · Confirm the actual property before acting</p>
         {report.localActions && <section className="local-action-workspace"><h3>Local instructions for your address area</h3>
           {report.localActions.procedures.length>0 && <div><h4>Published local procedures</h4><ul>{report.localActions.procedures.map(j=><li key={j.id}><a href={"/guides/"+j.slug}>{j.title}</a><span> · {j.reviewStatus==="verified"?"Reviewed":"Review due"}</span><p>{j.summary}</p></li>)}</ul></div>}
           {report.localActions.evidence.map(page=><article className="local-source-guide" key={page.id}><p className="section-label">{page.placeName} · Extracted official-page instructions</p><h4><a href={page.url} target="_blank" rel="noreferrer">{page.title}</a></h4><ol>{page.excerpts.map((line,index)=><li key={index}>{line}</li>)}</ol><p className="privacy-note">{page.warning}</p><p>Source: {page.publisher} · Indexed {page.indexedAt.slice(0,10)} · Human review pending</p></article>)}
