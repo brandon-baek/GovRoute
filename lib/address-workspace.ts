@@ -86,7 +86,9 @@ export async function parcelByAddress(match: CensusMatch, fetcher: typeof fetch 
     const data=await boundedJson(response);
     if(!isRecord(data)||data.error||data.exceededTransferLimit||!Array.isArray(data.features))throw new Error();
     const candidates=data.features.filter((f:unknown)=>{
-      if(!isRecord(f)||!isRecord(f.attributes)||typeof f.attributes.SitusFullAddress!=="string")throw new Error();
+      if(!isRecord(f)||!isRecord(f.attributes))throw new Error();
+      if(selectedParcel)return f.attributes.AIN===selectedParcel;
+      if(typeof f.attributes.SitusFullAddress!=="string")return false;
       const candidate=normalizedStreet(f.attributes.SitusFullAddress);
       return Boolean(selectedParcel) || candidate===street||candidate.startsWith(street+" ");
     }) as {attributes:Record<string,unknown>;geometry?:{rings?:unknown}}[];
@@ -187,7 +189,7 @@ export async function buildAddressWorkspace(match: CensusMatch, fetcher: typeof 
   if(inLA) {
     const parcel=await parcelByAddress(match,fetcher,selectedParcel);
     local.push(parcel.finding);
-    local.push(await pointFinding("zoning",match,fetcher,parcel.polygon));
+    local.push(parcel.finding.status==="matched"&&!parcel.polygon?{id:"zoning",label:addressLayers.zoning.label,source:addressLayers.zoning.url,publisher:addressLayers.zoning.publisher,checkedAt:new Date().toISOString(),status:"unavailable",values:{},note:"The selected parcel has no usable polygon. Zoning was not inferred from a different street point."}:await pointFinding("zoning",match,fetcher,parcel.polygon));
   }
   const findings=[...addressGeographies(match),await floodPromise,...local];
   return { checkedAt: new Date().toISOString(), precision: "address_range", findings, guides: assembleAddressGuides(findings), limitations: [

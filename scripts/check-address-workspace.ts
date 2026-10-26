@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { resolveAddress } from "../lib/address-resolver";
+import {contextForAddress} from "../lib/place-registry";
+import {enrichAddressActions} from "../lib/local-evidence";
 import { buildAddressWorkspace } from "../lib/address-workspace";
 
 async function main() {
@@ -21,6 +23,9 @@ async function main() {
     console.log(JSON.stringify(results[results.length - 1]));
     if(maps.every(f=>f.status==="unavailable"))console.warn("::warning::"+item.name+": official map providers unavailable; recovery guidance remains available.");
     if(item.local){
+      const context=await contextForAddress(matches[0]);const actions=await enrichAddressActions(context,"building_permit");
+      console.log(JSON.stringify({case:"actual address-scoped local instructions",places:context.places.length,procedures:actions.procedures.map(j=>j.id),extractedPages:actions.evidence.map(p=>({title:p.title,url:p.url,passages:p.excerpts.length}))}));
+      assert(actions.procedures.some(j=>j.id==="journey-la-county-building-permit"),"The real library address must expose the LA County permit procedure");
       const candidate=report.findings.find(f=>f.id==="parcel")?.candidates?.[0];
       if(candidate){const selected=await buildAddressWorkspace(matches[0],fetch,candidate.id);assert.equal(selected.findings.find(f=>f.id==="parcel")?.status,"matched","A deliberately selected nearby test parcel must resolve");console.log(JSON.stringify({case:"explicit nearby parcel confirmation",layers:selected.findings.filter(f=>["parcel","zoning"].includes(f.id)).map(f=>({id:f.id,status:f.status,values:f.values}))}));}
     }
