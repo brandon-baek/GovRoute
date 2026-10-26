@@ -10,6 +10,7 @@ export function SiteHeader() {
           </Link>
           <nav aria-label="Main navigation">
             <Link href="/guides">Pathways</Link>
+            <Link href="/plan">My action plan</Link>
             <Link href="/data">Sources & coverage</Link>
             <Link href="/about">About</Link>
           </nav>
@@ -18,3 +19,4 @@ export function SiteHeader() {
       </header>
   );
 }
+

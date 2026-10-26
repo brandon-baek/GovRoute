@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { SaveToPlan } from "@/components/SaveToPlan";
 import { restoreChecklist, toggleStep } from "@/lib/checklist";
 import type { Journey } from "@/lib/schema";
 import { jurisdictionLabel } from "@/lib/jurisdictions";
@@ -24,6 +25,7 @@ export function GuideResult({ journey, compact = false }: { journey: Journey; co
         <div className="verified-stamp"><CheckIcon /> {journey.reviewStatus === "review-due" ? "Review due · Last checked" : "Sources checked"} {formatted}</div>
       </header>
 
+      <SaveToPlan journey={journey} />
       {journey.coverageLevel==="official-handoff" && <div className="coverage-label"><strong>Official starting route</strong><p>The receiving agency still needs to confirm its local requirements. This checklist is a handoff, with source-checked navigation steps.</p></div>}
       {journey.scopeNote && <p className="scope-note">{journey.scopeNote}</p>}
       {journey.reviewNote && <p className="caution" role="status">{journey.reviewNote}</p>}
@@ -75,3 +77,4 @@ export function GuideResult({ journey, compact = false }: { journey: Journey; co
     </article>
   );
 }
+

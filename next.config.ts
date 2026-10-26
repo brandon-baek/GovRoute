@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   output: process.env.VERCEL ? undefined : "standalone",
   serverExternalPackages: ["better-sqlite3"],
   outputFileTracingIncludes: {
+    "/api/plan/recheck": ["./database/migrations/**/*", "./data/govguide.db", ...registryFiles],
     "/api/chat": ["./database/migrations/**/*", "./data/govguide.db", ...registryFiles],
     "/api/places": registryFiles,
     "/api/local-resources": registryFiles,
@@ -45,4 +46,5 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
 
