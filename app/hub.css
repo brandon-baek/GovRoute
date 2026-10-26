@@ -72,3 +72,16 @@ body{font-size:16px}.steps-list li .step-number,.source-list span,.result-action
 @media(max-width:1000px){.coverage-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.coverage-grid{grid-template-columns:1fr}.checklist-progress{grid-template-columns:1fr}.checklist-progress button{grid-column:1;grid-row:auto}.location-overview{padding:16px}.coverage-grid article{padding:20px}}
 @media print{.site-header,.site-footer,.hero__copy,.guide-search,.examples,.featured,.hub-method,.hub-coverage,.trust-line,.query-line,.trace-details,.result-actions,.checklist-progress button{display:none!important}.hero{display:block;padding:0}.guide-result{border:0;box-shadow:none}.steps-list>li{break-inside:avoid}body{background:white}.shell{width:100%;max-width:none}.coverage-explorer{display:none}.step-citations a:after{content:' (' attr(href) ')';font-size:10px}.guide-result details{display:block}}
+
+
+/* Results and address workspaces use the full reading width below the task form. */
+.hero>.search-experience{display:contents}
+.hero>.search-experience>.guide-search{grid-column:2;grid-row:1;min-width:0}
+.hero>.search-experience>.examples{grid-column:2}
+.hero>.search-experience>.address-workspace,.hero>.search-experience>.answer-region{grid-column:1/-1;min-width:0;width:100%}
+.hero>.search-experience>.address-workspace{margin:0}
+.hero>.search-experience>.answer-region:empty{display:none}
+.hero:has(.address-workspace){row-gap:2rem}
+.hero:has(.address-workspace)>.search-experience>.examples{display:none}
+.address-workspace .address-guides{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));align-items:start}
+@media(max-width:900px){.hero>.search-experience>.guide-search{grid-column:1/-1;grid-row:auto}.hero>.search-experience>.examples{grid-column:1/-1}}
