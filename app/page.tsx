@@ -2,7 +2,6 @@ import Link from "next/link";
 import { GuideSearch } from "@/components/GuideSearch";
 import { journeys } from "@/data/curated/journeys";
 import { ArrowIcon } from "@/components/icons";
-import { ExampleScenarios } from "@/components/ExampleScenarios";
 
 const starts = [
   { number: "01", title: "Passports & identity", detail: "Apply, renew, replace, or update a document.", href: "/guides/apply-for-or-renew-a-passport" },
@@ -15,10 +14,10 @@ export default function HomePage() {
   return <>
     <section className="hero shell" id="ask">
       <div className="hero__copy">
-        <p className="eyebrow">Government pathways, made understandable.</p>
-        <h1>Your next step.<br />Made clear.</h1>
-        <p>Tell us what you need to do. Find the right process, what to prepare, and where to go next—with official sources along the way.</p>
-        <p className="hero-location-note">Start with the task. Add your location when the rules depend on where you live.</p>
+        <p className="eyebrow">A clearer way through government.</p>
+        <h1>Less searching.<br />More getting<br />things done.</h1>
+        <p>Find the right office, understand the requirements, and follow a clear plan. Built around your task and where you live.</p>
+        <p className="hero-location-note">Moving states? Planning a project? Start with one question.</p>
         <div className="hero-proof"><span>No account required</span><span>Official source links</span></div>
       </div>
       <GuideSearch />
@@ -29,7 +28,6 @@ export default function HomePage() {
       <div className="hub-starts">{starts.map((item) => <Link key={item.number} href={item.href}><span>{item.number}</span><h3>{item.title}</h3><p>{item.detail}</p><span className="hub-starts__action">Find a pathway <ArrowIcon /></span></Link>)}</div>
     </section>
     <section className="shell plan-feature-callout"><div><p className="section-label">From finding a guide to getting it done</p><h2>Several agencies. One private action plan.</h2><p>Save guides and moving tasks together. Follow prerequisites, combine preparation lists, set personal calendar milestones and recheck saved guide versions.</p></div><Link href="/plan">Open my action plan →</Link></section>
-    <ExampleScenarios />
     <section className="hub-method shell"><p className="section-label">From a question to a next step</p><div>
       <article><span>01 / Find your route</span><h2>The process that fits.</h2><p>Your task and location help identify the relevant agency and pathway.</p></article>
       <article><span>02 / Get prepared</span><h2>Know what you’ll need.</h2><p>Follow ordered steps and check the required documents, eligibility, fees, and timing at the official source.</p></article>

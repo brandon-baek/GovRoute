@@ -1,11 +1,10 @@
 "use client";
 
-import {ProcessingTrail} from "@/components/LocationVisuals";
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { states } from "@/lib/jurisdictions";
 import type { Journey } from "@/lib/schema";
-import { ArrowIcon, ExternalIcon } from "@/components/icons";
+import { ExternalIcon } from "@/components/icons";
 import { GuideResult } from "@/components/GuideResult";
 import { DiscoveredGuideResult } from "@/components/DiscoveredGuideResult";
 import type { DiscoveredGuide } from "@/lib/discovered-guides";
@@ -44,6 +43,14 @@ export function GuideSearch() {
   const resultRef = useRef<HTMLDivElement>(null);
   const requestVersion = useRef(0);
   const activeRequest = useRef<AbortController | null>(null);
+  useEffect(() => {
+    if (!loading && !result) return;
+    const frame=requestAnimationFrame(()=>{
+      resultRef.current?.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
+      resultRef.current?.focus({preventScroll:true});
+    });
+    return ()=>cancelAnimationFrame(frame);
+  },[loading,result]);
   function resetLocation() { requestVersion.current++; activeRequest.current?.abort(); setLoading(false); setResult(null); }
 
   async function run(query: string) {
@@ -66,7 +73,7 @@ export function GuideSearch() {
       if (version!==requestVersion.current) return;
       if (!Array.isArray(data.alternatives)) data.alternatives=[];
       setResult(data);
-      window.setTimeout(() => resultRef.current?.focus(), 50);
+
     } catch {
       if (version!==requestVersion.current || controller.signal.aborted) return;
       setResult({ status: "error", message: "govroute could not connect. Check your connection and try again.", alternatives: [] });
@@ -83,39 +90,39 @@ export function GuideSearch() {
   return (
     <div className="search-experience">
       <form className="guide-search" onSubmit={submit}>
-        <label htmlFor="goal">What do you need to do?</label>
+        <div className="form-kicker"><span>Find your route</span><span>01 / Your situation</span></div><label htmlFor="goal">What do you need to do?</label>
         <div className="guide-search__control">
-          <textarea id="goal" name="goal" value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Describe the situation in your own words" rows={2} maxLength={600} />
-          <button type="submit" disabled={loading || message.trim().length < 3} aria-label={loading ? "Finding guidance" : "Find guidance"}><ArrowIcon /></button>
+          <textarea id="goal" name="goal" value={message} onChange={(event) => setMessage(event.target.value)} placeholder="e.g. I want to remodel my home and need a building permit" rows={2} maxLength={600} />
         </div>
-        <p className="prompt-help"><strong>For a local answer:</strong> choose your community or street address below, then describe one task. Try: “I want to remodel my home. How do I get a building permit?” The location selector supplies the jurisdiction; you do not need to type your address here.</p><p className="privacy-note">Do not include Social Security, account, passport, or license numbers.</p>
         <div className="location-fields search-location">
-          <label htmlFor="search-state">Where should we look?<select id="search-state" value={state} onChange={(event) => { setState(event.target.value); setPlaceIds([]); setLocationLabel("");setLocationContext(undefined);setLocationAddress(undefined);setPickerKey(k=>k+1); resetLocation(); }}><option value="">Choose a state when needed</option>{states.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}</select></label>
+          <label htmlFor="search-state">State or territory<select id="search-state" value={state} onChange={(event) => { setState(event.target.value); setPlaceIds([]); setLocationLabel("");setLocationContext(undefined);setLocationAddress(undefined);setPickerKey(k=>k+1); resetLocation(); }}><option value="">Select a state (optional)</option>{states.map((item) => <option key={item.code} value={item.code}>{item.name}</option>)}</select></label>
         </div>
         <LocationPicker key={pickerKey} state={state} onChange={(ids, label, code,context,address) => { setPlaceIds(ids); setLocationLabel(label);setLocationContext(context);setLocationAddress(address); if (code) setState(code); resetLocation(); }} />
-        {locationLabel && <p className="selected-location">Selected area: {locationLabel}</p>}
         {locationContext && <LocationOverview context={locationContext} />}
+        <button className="search-submit" type="submit" disabled={loading || message.trim().length < 3}>{loading?<><span className="ui-spinner"/>Finding your route…</>:<>Find my next step <span aria-hidden="true">→</span></>}</button>
+        <p className="search-hint">Official sources. No account required. Keep identity and account numbers out of your request.</p>
       </form>
 
-      {locationAddress && result?.status !== "address_guidance" && !(result?.status === "matched" && result.workspace) && <AddressWorkspace key={locationAddress} address={locationAddress} />}
+
 
       {!submitted && (
         <div className="examples" aria-label="Example requests">
           <span>Try an example</span>
           <div>
-            {examples.map((example) => <button type="button" key={example} onClick={() => { setMessage(example); void run(example); }}>{example}</button>)}
+            {examples.map((example) => <button type="button" key={example} onClick={() => { setMessage(example); document.getElementById("goal")?.focus(); }}>{example}</button>)}
           </div>
         </div>
       )}
 
-      <div className="answer-region" aria-live="polite" aria-busy={loading} ref={resultRef} tabIndex={-1}>
+      <div className="answer-region" aria-label="Guidance results" aria-live="polite" aria-busy={loading} ref={resultRef} tabIndex={-1}>
+        {result&&<div className="result-arrival"><span className="result-check">✓</span><div><strong>{result.status==="matched"||result.status==="address_guidance"||result.status==="discovered"?"Your guidance is ready":"Here’s what we found"}</strong><p>{locationLabel||states.find(s=>s.code===state)?.name||"Government pathways"}</p></div><a href="#ask">Edit request ↑</a></div>}
         {loading && <SearchSkeleton query={submitted} />}
         {result?.status === "address_guidance" && locationAddress && <AddressWorkspace key={locationAddress} address={locationAddress} initialReport={result.workspace} />}
         {result?.status === "matched" && (
           <>
             <div className="query-line"><span>You asked</span><p>{submitted}</p></div>
-            {locationAddress && result.workspace && <AddressWorkspace key={locationAddress} address={locationAddress} initialReport={result.workspace} />}
             <GuideResult journey={result.journey} />
+            {locationAddress && result.workspace && <AddressWorkspace key={locationAddress} address={locationAddress} initialReport={result.workspace} />}
             <details className="trace-details">
               <summary>How this answer was assembled</summary>
               <p>This pathway was selected for your task{state && result.journey.jurisdiction !== "federal" ? ` and ${states.find((item) => item.code === state)?.name ?? state}` : ""}. Its steps link to {result.provenance.assembledFrom.length} official source{result.provenance.assembledFrom.length === 1 ? "" : "s"}. Source links show where to check the current requirements before you act.</p>
@@ -142,18 +149,5 @@ export function GuideSearch() {
 }
 
 function SearchSkeleton({ query }: { query: string }) {
-  return (
-    <div className="search-loading" role="status">
-      <div className="query-line"><span>You asked</span><p>{query}</p></div>
-      <ProcessingTrail loading={true}/><div className="skeleton-card">
-        <span className="skeleton skeleton--short" />
-        <span className="skeleton skeleton--title" />
-        <span className="skeleton" />
-        <span className="skeleton skeleton--wide" />
-        <div className="skeleton-steps"><i /><i /><i /></div>
-      </div>
-      <span className="sr-only">Searching published government guides</span>
-    </div>
-  );
+ return <section className="search-progress" role="status"><div className="ui-spinner"/><p className="section-label">Finding your next step</p><h2>Checking the right route for you.</h2><p className="progress-query">{query}</p><p>Matching your task and location with published procedures and official sources. Address checks can take longer.</p><div className="indeterminate-track"><span/></div></section>;
 }
-

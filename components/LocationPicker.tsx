@@ -46,7 +46,7 @@ export function LocationPicker({ state, onChange }: { state: string; onChange: (
   }
 
   return <details className="location-refinement">
-    <summary>{selected ? `Location: ${selected}` : "Add a community or address for local processes"}</summary>
+    <summary>{selected ? `Change location` : "Add city or street address"}</summary>
     <div className="location-refinement__body">
       <div className="location-mode" aria-label="Location search type">
         <button type="button" aria-pressed={mode === "place"} onClick={() => { cancel();setMode("place"); setQuery(""); setMessage(""); setCandidates([]);setPlaces([]); }}>Community</button>
@@ -59,7 +59,7 @@ export function LocationPicker({ state, onChange }: { state: string; onChange: (
           onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); void search(); } }} />
         <button type="button" disabled={loading || query.trim().length < (mode === "place" ? 2 : 8)} onClick={() => void search()}>{loading ? "Looking up…" : "Look up"}</button>
       </div>
-      {mode === "address" && <p className="privacy-note">Your address is sent to the US Census geocoder for lookup and rechecked when you request location-based guidance. Govroute does not save it or send it to the AI router. Build an address report below to check official flood, school-district, and supported local property layers. Those checks send matched coordinates to FEMA and, in LA County, the normalized street address and candidate geometry to the county GIS provider. Address matches do not verify parcel boundaries.</p>}
+      {mode === "address" && <details className="location-privacy"><summary>How address lookup works</summary><p className="privacy-note">Your address is sent to the US Census geocoder for lookup and rechecked when you request location-based guidance. Govroute does not save it or send it to the AI router. Build an address report below to check official flood, school-district, and supported local property layers. Those checks send matched coordinates to FEMA and, in LA County, the normalized street address and candidate geometry to the county GIS provider. Address matches do not verify parcel boundaries.</p></details>}
       <div aria-live="polite">
         {message && <p>{message}</p>}
         {places.length > 0 && <ul className="place-options">{places.map((place) => <li key={`${place.id}:${place.matched_name}`}>
@@ -76,3 +76,4 @@ export function LocationPicker({ state, onChange }: { state: string; onChange: (
     </div>
   </details>;
 }
+
