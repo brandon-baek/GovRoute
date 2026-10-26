@@ -12,9 +12,9 @@ export function consumeRequest(key: string, now = Date.now()) {
 
 let aiWindow = { count: 0, resetsAt: 0 };
 export function consumeAIRoute(now = Date.now()) {
-  if (process.env.GOVGUIDE_ENABLE_PAID_AI !== "true") return false;
+  if ((process.env.GOVROUTE_ENABLE_PAID_AI ?? process.env.GOVGUIDE_ENABLE_PAID_AI) !== "true") return false;
   if (aiWindow.resetsAt <= now) aiWindow = { count: 0, resetsAt: now + 3_600_000 };
-  const configured = Number(process.env.GOVGUIDE_AI_ROUTES_PER_HOUR ?? 20);
+  const configured = Number(process.env.GOVROUTE_AI_ROUTES_PER_HOUR ?? process.env.GOVGUIDE_AI_ROUTES_PER_HOUR ?? 20);
   const limit = Number.isFinite(configured) ? Math.max(0, Math.min(100, configured)) : 0;
   if (aiWindow.count >= limit) return false;
   aiWindow.count += 1;

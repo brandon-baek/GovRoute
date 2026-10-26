@@ -7,9 +7,9 @@ const urls = [...new Set(journeys.flatMap((journey) => journey.sources.map((sour
 async function check(url: string) {
   const started = Date.now();
   try {
-    let response = await fetch(url, { method: "HEAD", redirect: "follow", signal: AbortSignal.timeout(15_000), headers: { "User-Agent": "GovGuide/1.0 source monitor" } });
+    let response = await fetch(url, { method: "HEAD", redirect: "follow", signal: AbortSignal.timeout(15_000), headers: { "User-Agent": "Govroute/1.0 source monitor" } });
     // Some official sites reject or misroute HEAD requests even though the page is live.
-    if (!response.ok) response = await fetch(url, { method: "GET", redirect: "follow", signal: AbortSignal.timeout(20_000), headers: { "User-Agent": "GovGuide/1.0 source monitor", Range: "bytes=0-1024" } });
+    if (!response.ok) response = await fetch(url, { method: "GET", redirect: "follow", signal: AbortSignal.timeout(20_000), headers: { "User-Agent": "Govroute/1.0 source monitor", Range: "bytes=0-1024" } });
     return { url, ok: response.ok, status: response.status, finalUrl: response.url, checkedAt: new Date().toISOString(), latencyMs: Date.now() - started };
   } catch (error) {
     return { url, ok: false, status: 0, error: error instanceof Error ? error.message : "Unknown error", checkedAt: new Date().toISOString(), latencyMs: Date.now() - started };

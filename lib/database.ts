@@ -9,10 +9,10 @@ let singleton: Database.Database | null = null;
 
 export function openDatabase(filename?: string) {
   const deployedOnVercel = Boolean(process.env.VERCEL);
-  const configuredFilename = filename ?? process.env.GOVGUIDE_DB_PATH;
+  const configuredFilename = filename ?? (process.env.GOVROUTE_DB_PATH ?? process.env.GOVGUIDE_DB_PATH);
   let databasePath: string;
   if (deployedOnVercel) {
-    // Vercel builds can expose GOVGUIDE_DB_PATH=:memory:; functions must read
+    // Vercel builds can expose a database override as :memory:; functions must read
     // the packaged snapshot. Search from the runtime cwd because function bundles
     // can be rooted below the project directory, and ignore stale relative paths.
     const roots: string[] = [];
