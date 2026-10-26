@@ -14,7 +14,7 @@ export const localTopics = [
   { id: "property", label: "Zoning and property", terms: ["zoning", "parcel", "recorded deed", "property records", "accessory dwelling"] },
   { id: "business", label: "Start a local business", terms: ["business license", "business registration", "business permit", "fictitious business"] },
   { id: "waste", label: "Trash and water services", terms: ["trash", "garbage", "water service", "sewer service", "recycling", "bulky item"] },
-  { id: "reports", label: "Report a local problem", terms: ["pothole", "illegal dumping", "report a problem", "service request", "311"] },
+  { id: "reports", label: "Report a local problem", terms: ["damaged public property", "pothole", "illegal dumping", "report a problem", "service request", "311"] },
   { id: "voting", label: "Voting and local records", terms: ["voter registration", "register to vote", "elections", "birth certificate", "vital records"] }
 ];
 const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
