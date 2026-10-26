@@ -18,7 +18,7 @@ import type { PlaceContext } from "@/lib/place-registry";
 type ApiResponse =
   | { status: "address_guidance"; message: string; workspace: AddressReport; alternatives: [] }
   | { status: "coverage_gap"; title?: string; directoryResources?: LocalResource[]; message: string; steps: string[]; sources: { id: string; title: string; url: string; publisher: string }[]; missing: string[]; scopeNote: string; alternatives: [] }
-  | { status: "matched"; message: string; journey: Journey; provenance: { router: string; storage: string; processStorage?: string; assembledFrom: string[] }; alternatives: { id: string; slug: string; title: string }[] }
+  | { status: "matched"; message: string; journey: Journey; workspace?: AddressReport; provenance: { router: string; storage: string; processStorage?: string; assembledFrom: string[] }; alternatives: { id: string; slug: string; title: string }[] }
   | { status: "discovered"; message: string; guide: DiscoveredGuide; provenance: { router: string; assembledFrom: string[] }; alternatives: { id: string; slug: string; title: string; summary?: string; href?: string }[] }
   | { status: "clarify" | "unsupported" | "blocked" | "error"; message: string; alternatives: { id: string; slug: string; title: string; summary?: string; href?: string }[]; officialSearchUrl?: string };
 
@@ -96,7 +96,7 @@ export function GuideSearch() {
         {locationContext && <LocationOverview context={locationContext} />}
       </form>
 
-      {locationAddress && result?.status !== "address_guidance" && <AddressWorkspace key={locationAddress} address={locationAddress} />}
+      {locationAddress && result?.status !== "address_guidance" && !(result?.status === "matched" && result.workspace) && <AddressWorkspace key={locationAddress} address={locationAddress} />}
 
       {!submitted && (
         <div className="examples" aria-label="Example requests">
@@ -113,6 +113,7 @@ export function GuideSearch() {
         {result?.status === "matched" && (
           <>
             <div className="query-line"><span>You asked</span><p>{submitted}</p></div>
+            {locationAddress && result.workspace && <AddressWorkspace key={locationAddress} address={locationAddress} initialReport={result.workspace} />}
             <GuideResult journey={result.journey} />
             <details className="trace-details">
               <summary>How this answer was assembled</summary>
@@ -154,3 +155,4 @@ function SearchSkeleton({ query }: { query: string }) {
     </div>
   );
 }
+

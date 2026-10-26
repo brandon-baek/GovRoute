@@ -10,6 +10,7 @@ import { retrieveDiscoveredGuides } from "@/lib/discovered-guides";
 import { consumeRequest, consumeAIRoute } from "@/lib/request-limits";
 import { stateByCode, statesInText } from "@/lib/jurisdictions";
 import { contextForAddress, contextForPlaces, relevantLegalSources } from "@/lib/place-registry";
+import { addressLocalActions } from "@/lib/local-evidence";
 import { buildAddressWorkspace } from "@/lib/address-workspace";
 import type { CensusMatch } from "@/lib/place-context";
 import { resolveAddress } from "@/lib/address-resolver";
@@ -111,6 +112,7 @@ export async function POST(request: NextRequest) {
     const processes = await publishedProcesses(location, scopedIds, context);
     if (verifiedAddressMatch && (requiresParcelEvidence(body.message) || addressMapTask)) {
       const workspace=await buildAddressWorkspace(verifiedAddressMatch);
+      workspace.localActions=await addressLocalActions(context,body.message);
       return NextResponse.json({status:"address_guidance",message:"Here are the map findings and next actions for your selected address.",workspace,alternatives:[]},{headers:{"Cache-Control":"no-store, private","Referrer-Policy":"no-referrer"}});
     }
     if (requiresParcelEvidence(body.message) && !isPropertyLookup(body.message)) {
@@ -212,10 +214,13 @@ export async function POST(request: NextRequest) {
     }
 
     const journey = matches[0].journey;
+    const workspace=verifiedAddressMatch && taskTopic(body.message)==="building_permit"?await buildAddressWorkspace(verifiedAddressMatch):undefined;
+    if(workspace)workspace.localActions=await addressLocalActions(context,body.message);
     return NextResponse.json({
       status: "matched",
       message: journey.summary,
       journey,
+      workspace,
       alternatives: matches.slice(1, 3).map(({ journey: alternative }) => ({ id: alternative.id, slug: alternative.slug, title: alternative.title })),
       provenance: {
         router,
@@ -234,3 +239,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ status: "error", message: "govroute could not process that request. Please try again.", alternatives: [] }, { status: 500 });
   }
 }
+

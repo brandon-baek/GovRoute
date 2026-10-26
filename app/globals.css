@@ -70,3 +70,5 @@
 .address-workspace a { color:#215939; text-decoration:underline; text-underline-offset:.15rem }
 .address-workspace details { margin:1rem 0 }
 @media print { .address-workspace { background:white; border:1px solid #888 } .address-workspace button { display:none } .address-finding,.address-guides li { break-inside:avoid } }
+
+.address-task {display:grid;gap:.4rem;font-weight:600;max-width:30rem;margin:1rem 0}.address-task select{padding:.7rem;border:1px solid #506d5c;border-radius:.5rem;background:#fffdf8;max-width:100%;color:#20362c;font:inherit}.local-source-guide{background:#fffdf8;padding:1.25rem;margin:1rem 0;border:1px solid #c8d1c5;border-radius:.7rem}.local-source-guide h4{margin:.4rem 0 1rem;font-size:1.2rem}.local-source-guide li{margin:.65rem 0;line-height:1.6}.parcel-candidates{display:grid;gap:.5rem;margin:1rem 0}.parcel-candidates button{text-align:left;font-size:.85rem}.local-action-workspace h3{font-size:1.3rem}

@@ -9,20 +9,20 @@ describe("address-specific map evidence and generated guides", () => {
     const calls:string[]=[];
     const report=await buildAddressWorkspace(address(),async(url,init)=>{
       const params=new URLSearchParams(String(init?.body));calls.push(params.get("geometryType")??"address");
-      if(String(url).includes("/12/"))return json({features:[{attributes:{AIN:"1234567890",SitusFullAddress:"2809 FOOTHILL BLVD LA CRESCENTA CA"},geometry:{rings:[[[-118,34],[-118.001,34],[-118.001,34.001],[-118,34]]]}}]});
-      return json({features:[{attributes:String(url).includes("/4/")?{ZONE:"R-1"}:{FLD_ZONE:"X"}}]});
+      if(String(url).includes("LACounty_Parcel"))return json({features:[{attributes:{AIN:"1234567890",SitusFullAddress:"2809 FOOTHILL BLVD LA CRESCENTA CA"},geometry:{rings:[[[-118,34],[-118.001,34],[-118.001,34.001],[-118,34]]]}}]});
+      return json({features:[{attributes:String(url).includes("/346/")?{ZONE:"R-1"}:{FLD_ZONE:"X"}}]});
     });
     expect(calls).toContain("esriGeometryPolygon");expect(report.findings.find(f=>f.id==="parcel")?.status).toBe("matched");
     expect(JSON.stringify(report)).not.toContain("2809 FOOTHILL");
   });
   it("does not choose between multiple assessor parcels or a similar street name",async()=>{
     expect((await parcelByAddress(address(),fetcher({features:[{attributes:{AIN:"1234567890",SitusFullAddress:"2809 FOOTHILL BLVD"}},{attributes:{AIN:"1234567891",SitusFullAddress:"2809 FOOTHILL BLVD"}}]}))).finding.status).toBe("ambiguous");
-    expect((await parcelByAddress(address(),fetcher({features:[{attributes:{AIN:"1234567890",SitusFullAddress:"2809 FOOTHILL BLVDOTHER"}}]}))).finding.status).toBe("no_match");
+    expect((await parcelByAddress(address(),fetcher({features:[{attributes:{AIN:"1234567890",SitusFullAddress:"2809 FOOTHILL BLVDOTHER"}}]}))).finding.status).toBe("ambiguous");
   });
   it("queries reviewed endpoints with a point, never the street address", async () => {
     let called = ""; let params = "";
     const finding = await pointFinding("zoning", address(), async (url, init) => { called = String(url); params = String(init?.body); expect(init?.cache).toBe("no-store"); expect(init?.redirect).toBe("error"); return json({ features: [{ attributes: { ZONE: "R-1", Z_DESC: "Single family", PLNG_AREA: "Crescenta Valley" } }] }); });
-    expect(called).toContain("/DRP/ZNET_Public/MapServer/4/query"); expect(params).toContain("inSR=4326"); expect(params).not.toContain("PUBLIC");
+    expect(called).toContain("/DRP/GISNET_Public/MapServer/346/query"); expect(params).toContain("inSR=4326"); expect(params).not.toContain("PUBLIC");
     const guide = assembleAddressGuides([finding])[0]; expect(guide.why).toContain("R-1"); expect(guide.why).toContain("Crescenta Valley");
   });
   it("never presents empty, incomplete, or failed flood data as low risk", async () => {
@@ -50,7 +50,7 @@ describe("address-specific map evidence and generated guides", () => {
   it("keeps local findings when another provider fails", async () => {
     const report = await buildAddressWorkspace(address(), async url => {
       if (String(url).includes("fema")) throw new Error("timeout");
-      return json({ features: [{ attributes: String(url).includes("/12/") ? { AIN: "1234567890", SitusFullAddress: "2809 FOOTHILL BLVD LA CRESCENTA CA" } : { ZONE: "R-2" } }] });
+      return json({ features: [{ attributes: String(url).includes("LACounty_Parcel") ? { AIN: "1234567890", SitusFullAddress: "2809 FOOTHILL BLVD LA CRESCENTA CA" } : { ZONE: "R-2" } }] });
     });
     expect(report.findings.find(f => f.id === "flood")?.status).toBe("unavailable"); expect(report.guides.find(g => g.id === "property")?.why).toContain("R-2");
     expect(JSON.stringify(report)).not.toContain("2809 FOOTHILL");
@@ -66,3 +66,4 @@ describe("address-specific map evidence and generated guides", () => {
     expect((await pointFinding("parcel", address(), fetcher({ features: [{ attributes: { UseDescription: "Residential" } }] }))).status).toBe("unavailable");
   });
 });
+

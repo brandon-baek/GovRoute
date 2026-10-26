@@ -22,7 +22,7 @@ afterEach(()=>{vi.unstubAllGlobals();fixtures.city=false;});
 describe("address-to-procedure verification",()=>{
   it("preserves address-range context without echoing the address",async()=>{
     const fetcher=vi.fn().mockResolvedValue(new Response(JSON.stringify({result:{addressMatches:[match]}})));vi.stubGlobal("fetch",fetcher);
-    const answer=await ask();expect(answer.status).toBe("matched");expect(answer.journey.id).toBe("journey-la-county-building-permit");expect(fetcher).toHaveBeenCalledOnce();expect(JSON.stringify(answer)).not.toContain("TEST ADDRESS");
+    const answer=await ask();expect(answer.status).toBe("matched");expect(answer.journey.id).toBe("journey-la-county-building-permit");expect(answer.workspace).toBeDefined();expect(fetcher.mock.calls.length).toBeGreaterThan(1);expect(JSON.stringify(answer)).not.toContain("TEST ADDRESS");
   });
   it("does not turn an incorporated address into a county permit route",async()=>{
     fixtures.city=true;vi.stubGlobal("fetch",vi.fn().mockResolvedValue(new Response(JSON.stringify({result:{addressMatches:[match]}}))));
@@ -38,3 +38,4 @@ describe("address-to-procedure verification",()=>{
     }
   });
 });
+

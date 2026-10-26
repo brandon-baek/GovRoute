@@ -1,22 +1,22 @@
+import type { LocalActions } from "./local-evidence";
 import type { CensusMatch } from "./place-context";
 
 export type AddressFinding = {
   id: string; label: string; status: "matched" | "no_match" | "unavailable" | "ambiguous";
-  values: Record<string, string>; source: string; publisher: string; checkedAt: string; note: string;
+  values: Record<string, string>; candidates?: { id: string; label: string }[]; source: string; publisher: string; checkedAt: string; note: string;
 };
 export type AddressGuide = {
   id: string; title: string; why: string;
   steps: { title: string; detail: string; url: string }[];
 };
 export type AddressWorkspace = {
-  checkedAt: string; precision: "address_range"; findings: AddressFinding[]; guides: AddressGuide[]; limitations: string[];
+  localActions?: LocalActions; checkedAt: string; precision: "address_range"; findings: AddressFinding[]; guides: AddressGuide[]; limitations: string[];
 };
-const la = "https://arcgis.gis.lacounty.gov/arcgis/rest/services/DRP/ZNET_Public/MapServer";
 // Audited connector endpoints, never visitor-controlled URLs.
 export const addressLayers = {
   flood: { url: "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28", fields: ["FLD_ZONE", "ZONE_SUBTY", "SFHA_TF"], publisher: "FEMA", label: "Mapped flood zone" },
-  parcel: { url: la + "/12", fields: ["AIN", "APN", "UseDescription"], publisher: "Los Angeles County", label: "Candidate assessor parcel" },
-  zoning: { url: la + "/4", fields: ["ZONE", "Z_DESC", "PLNG_AREA"], publisher: "Los Angeles County Planning", label: "Mapped zoning at the address point" }
+  parcel: { url: "https://public.gis.lacounty.gov/public/rest/services/LACounty_Cache/LACounty_Parcel/MapServer/0", fields: ["AIN", "APN", "UseDescription"], publisher: "Los Angeles County", label: "Candidate assessor parcel" },
+  zoning: { url: "https://arcgis.gis.lacounty.gov/arcgis/rest/services/DRP/GISNET_Public/MapServer/346", fields: ["ZONE", "Z_DESC", "PLNG_AREA", "TITLE_22"], publisher: "Los Angeles County Planning", label: "Mapped zoning at the address point" }
 } as const;
 
 async function boundedJson(response: Response): Promise<unknown> {
@@ -69,26 +69,29 @@ export async function pointFinding(id: keyof typeof addressLayers, match: Census
 function normalizedStreet(value: string) {
   return value.toUpperCase().replace(/[^A-Z0-9 -]/g, " ").replace(/\bBOULEVARD\b/g,"BLVD").replace(/\bAVENUE\b/g,"AVE").replace(/\bSTREET\b/g,"ST").replace(/\bROAD\b/g,"RD").replace(/\bDRIVE\b/g,"DR").replace(/\bLANE\b/g,"LN").replace(/\s+/g," ").trim();
 }
-export async function parcelByAddress(match: CensusMatch, fetcher: typeof fetch = fetch): Promise<{ finding: AddressFinding; polygon?: { rings: number[][][] } }> {
+export async function parcelByAddress(match: CensusMatch, fetcher: typeof fetch = fetch, selectedParcel?: string): Promise<{ finding: AddressFinding; polygon?: { rings: number[][][] } }> {
   const layer=addressLayers.parcel;
   const base={id:"parcel",label:"Candidate assessor parcel",values:{},source:layer.url,publisher:layer.publisher,checkedAt:new Date().toISOString()};
   const street=normalizedStreet(match.matchedAddress.split(",")[0]);
   if(!/^[0-9][A-Z0-9 -]{4,120}$/.test(street)) return {finding:{...base,status:"no_match",note:"The street address could not be matched conservatively to assessor records. Use the official parcel lookup."}};
+  if(selectedParcel && !/^[0-9]{10}$/.test(selectedParcel))throw new Error("Invalid parcel ID");
   try {
     // Only a bounded, normalized Census street is used; no raw SQL or URL comes from the visitor.
     // Situs may include a city/ZIP, so compare a prefix and validate each returned street again.
     const response=await fetcher(layer.url+"/query",{
       method:"POST",cache:"no-store",redirect:"error",signal:AbortSignal.timeout(7000),
-      body:new URLSearchParams({f:"json",where:"UPPER(SitusFullAddress) LIKE '"+street+"%'",outFields:"AIN,APN,SitusFullAddress",returnGeometry:"true",outSR:"4326",resultRecordCount:"10"})
+      body:new URLSearchParams({f:"json",where:selectedParcel?"AIN='"+selectedParcel+"'":"UPPER(SitusFullAddress) LIKE '"+street+"%'",outFields:"AIN,APN,SitusFullAddress,SitusAddress",returnGeometry:"true",outSR:"4326",resultRecordCount:"10",
+        ...(selectedParcel?{geometry:match.coordinates.x+","+match.coordinates.y,geometryType:"esriGeometryPoint",inSR:"4326",spatialRel:"esriSpatialRelIntersects",distance:"150",units:"esriSRUnit_Meter"}:{})})
     });
     const data=await boundedJson(response);
     if(!isRecord(data)||data.error||data.exceededTransferLimit||!Array.isArray(data.features))throw new Error();
     const candidates=data.features.filter((f:unknown)=>{
       if(!isRecord(f)||!isRecord(f.attributes)||typeof f.attributes.SitusFullAddress!=="string")throw new Error();
       const candidate=normalizedStreet(f.attributes.SitusFullAddress);
-      return candidate===street||candidate.startsWith(street+" ");
+      return Boolean(selectedParcel) || candidate===street||candidate.startsWith(street+" ");
     }) as {attributes:Record<string,unknown>;geometry?:{rings?:unknown}}[];
-    if(!candidates.length)return {finding:{...base,status:"no_match",note:"No assessor street-address record matched. A road-range point is not a substitute for a parcel match."}};
+    if(!candidates.length && !selectedParcel) return nearbyParcels(match,fetcher);
+    if(!candidates.length)return {finding:{...base,status:"no_match",note:"That parcel was not found within 150 meters of the matched address. Select a nearby candidate again."}};
     const keyed=new Map<string,typeof candidates[number]>();
     for(const f of candidates) {
       const id=typeof f.attributes.AIN==="string"?f.attributes.AIN:typeof f.attributes.APN==="string"?f.attributes.APN:null;
@@ -100,8 +103,24 @@ export async function parcelByAddress(match: CensusMatch, fetcher: typeof fetch 
     for(const key of ["AIN","APN"])if(typeof feature.attributes[key]==="string")values[key]=String(feature.attributes[key]).slice(0,30);
     const raw=feature.geometry?.rings;
     const valid=Array.isArray(raw)&&raw.length>0&&raw.length<=100&&raw.every(r=>Array.isArray(r)&&r.length>=4&&r.length<=10000&&r.every(p=>Array.isArray(p)&&p.length===2&&p.every(Number.isFinite)&&Math.abs(p[0])<=180&&Math.abs(p[1])<=90));
-    return {finding:{...base,status:"matched",values,note:"One assessor parcel matched the Census street address. Confirm it against your records; unit-level identity and ownership have not been established."},polygon:valid?{rings:raw as number[][][]}:undefined};
+    return {finding:{...base,status:"matched",values,note:selectedParcel?"You selected this nearby assessor parcel. Confirm the identity against your records; ownership has not been established.":"One assessor parcel matched the Census street address. Confirm it against your records; unit-level identity and ownership have not been established."},polygon:valid?{rings:raw as number[][][]}:undefined};
   }catch{return {finding:{...base,status:"unavailable",note:"The assessor address lookup was unavailable or incomplete. Use the official parcel lookup; no parcel was inferred."}};}
+}
+
+export async function nearbyParcels(match:CensusMatch,fetcher:typeof fetch=fetch):Promise<{finding:AddressFinding}> {
+  const layer=addressLayers.parcel;
+  const base={id:"parcel",label:"Choose the property",values:{},source:layer.url,publisher:layer.publisher,checkedAt:new Date().toISOString()};
+  try {
+    const response=await fetcher(layer.url+"/query",{method:"POST",cache:"no-store",redirect:"error",signal:AbortSignal.timeout(7000),body:new URLSearchParams({f:"json",where:"1=1",geometry:match.coordinates.x+","+match.coordinates.y,geometryType:"esriGeometryPoint",inSR:"4326",spatialRel:"esriSpatialRelIntersects",distance:"75",units:"esriSRUnit_Meter",outFields:"AIN,APN,SitusAddress",returnGeometry:"false",resultRecordCount:"10"})});
+    const data=await boundedJson(response);
+    if(!isRecord(data)||data.error||!Array.isArray(data.features))throw new Error();
+    const candidates:{id:string;label:string}[]=[];
+    for(const feature of data.features){if(!isRecord(feature)||!isRecord(feature.attributes))continue;const a=feature.attributes;
+      if(typeof a.AIN!=="string"||!/^[0-9]{10}$/.test(a.AIN))continue;
+      candidates.push({id:a.AIN,label:(typeof a.SitusAddress==="string"?a.SitusAddress+" · ":"")+"Parcel "+String(a.APN??a.AIN)});
+    }
+    return {finding:{...base,status:candidates.length?"ambiguous":"no_match",candidates:[...new Map(candidates.map(c=>[c.id,c])).values()],note:candidates.length?"The assessor may use a different address. Choose your property from these nearby parcels only if its identity matches your records. No nearest parcel was selected automatically.":"No nearby assessor parcel was returned. Use the official assessor lookup."}};
+  }catch{return {finding:{...base,status:"unavailable",note:"Nearby parcel lookup is temporarily unavailable. No parcel was inferred."}};}
 }
 
 export function addressGeographies(match: CensusMatch): AddressFinding[] {
@@ -130,7 +149,7 @@ export function assembleAddressGuides(findings: AddressFinding[]): AddressGuide[
       { title: "Confirm zoning and the responsible planning office", detail: zoning?.status === "matched"
           ? "Ask the planning office to confirm " + zoning.values.ZONE + (zoning.values.Z_DESC ? " (" + zoning.values.Z_DESC + ")" : "") + ", overlays, setbacks, and requirements for the proposed work. County planning serves unincorporated areas; incorporated cities use their city planning office."
           : "Check whether the parcel is inside a city or unincorporated county territory. Use that jurisdiction's planning office and map; a missing county zone is not an exemption.",
-        url: "https://planning.lacounty.gov/how-do-i/find-my-zoning/" },
+        url: zoning?.status === "matched" && zoning.values.TITLE_22 && /^[A-Z0-9_]+$/i.test(zoning.values.TITLE_22) ? "https://library.municode.com/ca/los_angeles_county/codes/code_of_ordinances?nodeId=TIT22PLZO_"+encodeURIComponent(zoning.values.TITLE_22) : "https://planning.lacounty.gov/how-do-i/find-my-zoning/" },
       { title: "Prepare your project review", detail: "Bring the confirmed parcel number, proposed-work description and sketch, and zoning findings. Ask which planning approvals and building permits are required before filing or paying. This report does not establish that an ADU, fence, addition, or business use is permitted.",
         url: "https://planning.lacounty.gov/" }
     ]
@@ -161,12 +180,12 @@ export function assembleAddressGuides(findings: AddressFinding[]): AddressGuide[
   });
   return guides;
 }
-export async function buildAddressWorkspace(match: CensusMatch, fetcher: typeof fetch = fetch): Promise<AddressWorkspace> {
+export async function buildAddressWorkspace(match: CensusMatch, fetcher: typeof fetch = fetch, selectedParcel?: string): Promise<AddressWorkspace> {
   const inLA = Object.entries(match.geographies).some(([layer, rows]) => /counties/i.test(layer) && rows.some(r => r.GEOID === "06037"));
   const floodPromise=pointFinding("flood",match,fetcher);
   const local:AddressFinding[]=[];
   if(inLA) {
-    const parcel=await parcelByAddress(match,fetcher);
+    const parcel=await parcelByAddress(match,fetcher,selectedParcel);
     local.push(parcel.finding);
     local.push(await pointFinding("zoning",match,fetcher,parcel.polygon));
   }
@@ -177,3 +196,4 @@ export async function buildAddressWorkspace(match: CensusMatch, fetcher: typeof 
     "Map findings are machine-retrieved screening evidence. No permission, fee, deadline, school assignment, or absence of risk is inferred from them."
   ] };
 }
+
