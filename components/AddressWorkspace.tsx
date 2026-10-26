@@ -22,7 +22,7 @@ export function AddressWorkspace({ address, initialReport }: { address: string; 
   return <section className="address-workspace" aria-label="Address-specific findings and guides">
     <div className="address-workspace__heading"><div><p className="section-label">At your address</p><h2>Turn the location into a plan.</h2></div><button type="button" disabled={loading} onClick={() => { setReport(undefined); setCompleted([]); setError(""); setLoading(true); setRequested(true); setRevision(r => r + 1); }}>{loading ? "Checking official maps…" : report ? "Refresh findings" : "Build my address report"}</button></div>
     <p>Look up mapped flood zones, school-district geography, and—in Los Angeles County—candidate parcels and zoning. Your checklist changes with the records returned.</p>
-    <p className="privacy-note">This sends the address to Census and matched coordinates to FEMA and, for LA County, the county GIS service. Govroute does not save the address or findings. Nothing is sent to an AI model. Clearing the location removes this report.</p>
+    <p className="privacy-note">This sends the address to Census, matched coordinates to FEMA, and—for LA County—the normalized street address and candidate geometry to the county GIS service. Govroute does not save the address or findings. Nothing is sent to an AI model. Clearing the location removes this report.</p>
     <div aria-live="polite" aria-busy={loading}>
       {loading && <p role="status">Checking the address and official map layers. Unavailable layers will be shown separately.</p>}
       {error && <p role="alert">{error}</p>}
