@@ -27,6 +27,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run lint
+      - name: Live public-address provider checks
+        run: npx tsx scripts/check-address-workspace.ts
       - run: npm run build
         env:
           VERCEL: '1'
