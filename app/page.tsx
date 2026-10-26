@@ -28,6 +28,7 @@ export default function HomePage() {
       <div className="section-heading"><div><p className="section-label">A place to start</p><h2>Everyday tasks. Clear routes.</h2></div><Link href="/guides">Browse pathways <ArrowIcon /></Link></div>
       <div className="hub-starts">{starts.map((item) => <Link key={item.number} href={item.href}><span>{item.number}</span><h3>{item.title}</h3><p>{item.detail}</p><span className="hub-starts__action">Find a pathway <ArrowIcon /></span></Link>)}</div>
     </section>
+    <section className="shell plan-feature-callout"><div><p className="section-label">From finding a guide to getting it done</p><h2>Several agencies. One private action plan.</h2><p>Save guides and moving tasks together. Follow prerequisites, combine preparation lists, set personal calendar milestones and recheck saved guide versions.</p></div><Link href="/plan">Open my action plan →</Link></section>
     <ExampleScenarios />
     <section className="hub-method shell"><p className="section-label">From a question to a next step</p><div>
       <article><span>01 / Find your route</span><h2>The process that fits.</h2><p>Your task and location help identify the relevant agency and pathway.</p></article>
@@ -37,3 +38,4 @@ export default function HomePage() {
     <section className="hub-coverage shell"><div><p className="section-label">Growing with evidence</p><h2>The right rules for the right place.</h2><p>Current pathways include federal tasks and a limited set of state and local processes. We show gaps as we connect more communities, authorities, and official procedures.</p><p>{journeys.length} curated pathways are currently available. A location record alone does not mean every process there is covered.</p></div><Link href="/data">See sources & coverage <ArrowIcon /></Link></section>
   </>;
 }
+
