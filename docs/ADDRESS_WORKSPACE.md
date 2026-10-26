@@ -1,32 +1,43 @@
-# Address-specific findings and guide assembly
+# Address-specific local task workspace
 
-An address can now drive live point intersections and checklists rather than only a jurisdiction filter.
+Selecting an address changes both the local evidence and the actions presented. Search and the coverage explorer share the same workspace.
 
-## User behavior
-Select a street-address match in search or the coverage explorer and choose **Build my address report**. Property questions with a selected address, plus flood and school-district questions, also request the report directly. Building-permit pathways retain their existing reviewed service-area checks.
+## User flow
 
-The report shows:
-- Census-returned school-district and county geography;
-- an attempted national FEMA NFHL flood-zone intersection;
-- LA County candidate parcel number, zoning code, description, and planning area where returned;
-- generated property, floodplain, and district-enrollment research checklists with official next actions.
+1. Look up the complete address and confirm the Census match.
+2. Build the address report. It resolves the address on the server, identifies its actual geographic context, and returns local published procedures, relevant indexed official-page instructions, district geography, and attempted map-layer intersections.
+3. Choose a local task: building/remodeling, property/zoning, business licensing, trash/water, local reports, or voting/records. The backend refreshes evidence from task-scoped department pages first, then registered local government websites. Each extracted instruction retains its official page, publisher, retrieval date, and machine-indexed status.
+4. Where the assessor address differs from the street address, choose the actual property from nearby assessor parcels. A supplied parcel ID must resolve within 150 meters of the server-verified address point. No nearest parcel is automatically declared correct.
+5. The candidate parcel polygon supplies zoning intersections. Interior-overlap queries exclude polygons that merely touch a parcel boundary. Conflicting zone records remain visible. A missing polygon never falls back to assigning a different street point's zone to the parcel.
+6. Use the source-specific zoning-code link, matched district directory record, local published procedure, or official application instructions. Check off and print the resulting research checklist.
 
-Changing map values changes the guide text. A high-risk FEMA zone triggers floodplain-administrator and lender/insurer questions. County zoning and candidate parcel identifiers are carried into property-review preparation. Unsupported geographies do not inherit county adapters.
+Building-permit responses retain their reviewed guide and include this address evidence. Property, floodplain, and school-district requests can return the address workspace directly.
 
-## Evidence and privacy
-Connector URLs and selected fields are fixed in lib/address-workspace.ts. Query geometry comes only from server-side Census resolution, never a submitted point or county ID. Point queries are POSTed with no-store, no redirects, seven-second timeouts and 512 KiB response limits. Multiple differing polygons, missing fields, truncation, empty results, and provider failures are distinct outcomes.
+## National local-source discovery
 
-The address is sent to Census. Coordinates are sent to FEMA. Within LA County, the normalized Census street address is sent to the county assessor-parcel layer; a unique candidate polygon is then used for zoning intersections. The UI explains this before the report request. No raw address or coordinates are returned in the report, persisted by this feature, placed in a share URL, or sent to an LLM. HTTP responses are private/no-store. Provider and host logging are outside this feature's control.
+The registry stores actual Census/GNIS identities, geographic context, CISA registrations, indexed government pages, and separately reviewed procedure scopes. Address-local source selection requires a government present in the verified address context. A shared county, postal label, or keyword never grants reviewed topic competence.
 
-Census coordinates are interpolated address-range points, often near roads. A candidate parcel is NOT a verified subject parcel. Do not infer ownership, permitted uses, exact setbacks, insurance obligations, school assignment, or an absence of flood risk. Failed providers preserve the remaining report.
+Retained source passages are extracted only from pages whose title/URL identify the task. Fresh lookup starts with scoped procedure sources when available and then linked local .gov websites. It observes robots rules, stays on the approved source host, rejects private-address hosts and arbitrary redirects, caps bodies and fetch times, rate-limits crawling, and bounds the public-source cache. Cache keys contain canonical task categories and public URLs, never raw user messages or addresses. Failed live lookups retain indexed evidence with its existing age/failure warnings.
 
-## Source manifest
-- LA County ZNET zoning layer 4: ZONE, Z_DESC, PLNG_AREA.
-- LA County ZNET parcel layer 12: AIN, APN, SitusFullAddress and candidate geometry. Street names are conservatively normalized; multiple assessor identities remain ambiguous. Zoning is queried across the candidate polygon when available, so road-interpolated Census points do not silently replace parcel evidence.
-- FEMA NFHL layer 28: FLD_ZONE, ZONE_SUBTY, SFHA_TF.
-- Census geocoder geography collections: county, incorporated place, school districts.
+Extracted instructions are source passages, not newly reviewed legal conclusions. The UI distinguishes them from published procedures. No model invents local eligibility, fees, deadlines, permission, or authority. No paid AI service is needed.
 
-Point zoning and parcels currently cover LA County; flood screening is attempted nationally. These are screening/research guides, not reviewed legal determinations or full nationwide procedure coverage.
+## GIS and districts
 
-## Validation
-Added focused map-adapter and endpoint regressions. Existing scope tests remain unchanged. Runtime, dependency installation, full build, visual checks, and live provider checks must pass before merging. The local environment became unavailable during development. GitHub Actions subsequently passed 107 tests, typecheck, lint, and production build on the initial implementation. Live checks exposed road-point misses in LA County and an ambiguous New York address; these motivated the assessor street lookup and polygon follow-up. Validate the final revision and live providers before merging. Government-service outages remain explicit report states. The pre-existing production dependency audit also reports high/critical advisories and remains a separate release blocker.
+- FEMA NFHL layer 28: flood-zone screening nationally where available. A failed, empty, or ambiguous response never becomes a low-risk conclusion.
+- LA County public assessor parcel layer 0: normalized street lookup, bounded nearby candidate search, and explicit candidate confirmation.
+- LA County GISNET zoning layer 346: code, description, planning area and Title 22 node. Multiple records remain distinct.
+- Census geography collections: county, incorporated place, and school district. A district GEOID links to its exact NCES directory record; it does not identify an assigned campus or guarantee enrollment.
+
+Parcel/zoning adapters currently cover LA County; other jurisdictions receive the applicable local procedures, official-source extraction, and national screenings. Non-.gov sites need separately evidenced connectors. Place coverage does not establish complete procedural coverage or resolve every property right.
+
+## API and privacy
+
+POST /api/location/workspace accepts address, optional task and optional parcelId. It refuses caller coordinates, arbitrary URLs, unknown fields, invalid IDs, oversized bodies and ambiguous address matches. Its responses are private/no-store and its function trace includes the pinned national registry asset.
+
+The address goes to Census. Coordinates go to FEMA; the normalized street and selected geometry go to LA County when those adapters apply. Official-page discovery sends neither the address nor the user's request to the government websites. Govroute does not persist the address, parcel choice, checklist or findings in this feature, or send them to an LLM. The UI explains provider disclosures before lookup. Provider/hosting logs are separate systems.
+
+Census coordinates interpolate along address ranges. Candidate parcels require confirmation. Ownership, recorded restrictions, complete overlays, exact setbacks, legal permission, flood insurance obligations and school assignment remain matters for the relevant official records and offices.
+
+## Verification
+
+Regression coverage includes geographic isolation, source extraction, safe URL discovery, robots-aware fetch behavior, input budgets, polygon ambiguity, provider failure, explicit parcel confirmation, privacy and rendering. CI runs production dependency audit, TypeScript, tests, lint, production build and live public-address checks. The source manifest is immutable; full national importer tests remain in the foundation workflow.

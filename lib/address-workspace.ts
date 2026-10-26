@@ -151,7 +151,7 @@ export function assembleAddressGuides(findings: AddressFinding[]): AddressGuide[
       { title: "Confirm zoning and the responsible planning office", detail: zoning?.status === "matched"
           ? "Ask the planning office to confirm " + zoning.values.ZONE + (zoning.values.Z_DESC ? " (" + zoning.values.Z_DESC + ")" : "") + ", overlays, setbacks, and requirements for the proposed work. County planning serves unincorporated areas; incorporated cities use their city planning office."
           : "Check whether the parcel is inside a city or unincorporated county territory. Use that jurisdiction's planning office and map; a missing county zone is not an exemption.",
-        url: zoning?.status === "matched" && zoning.values.TITLE_22 && /^[A-Z0-9_]+$/i.test(zoning.values.TITLE_22) ? "https://library.municode.com/ca/los_angeles_county/codes/code_of_ordinances?nodeId=TIT22PLZO_"+encodeURIComponent(zoning.values.TITLE_22) : "https://planning.lacounty.gov/how-do-i/find-my-zoning/" },
+        url: zoning?.status === "matched" && zoning.values.TITLE_22 && /^[A-Z0-9_.-]+$/i.test(zoning.values.TITLE_22) ? "https://library.municode.com/ca/los_angeles_county/codes/code_of_ordinances?nodeId=TIT22PLZO_"+encodeURIComponent(zoning.values.TITLE_22) : "https://planning.lacounty.gov/how-do-i/find-my-zoning/" },
       { title: "Prepare your project review", detail: "Bring the confirmed parcel number, proposed-work description and sketch, and zoning findings. Ask which planning approvals and building permits are required before filing or paying. This report does not establish that an ADU, fence, addition, or business use is permitted.",
         url: "https://planning.lacounty.gov/" }
     ]

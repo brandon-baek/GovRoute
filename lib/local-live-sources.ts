@@ -68,6 +68,7 @@ async function inspectGovernment(resource:Pick<LocalResource,"url"|"publisher"|"
 }
 export async function liveAddressSources(context:PlaceContext|undefined,task:string,seeds:Pick<LocalResource,"url"|"publisher"|"placeName">[]=[]) {
   if(!task||!context?.places.length)return [];
+  const normalizedTask=localTopics.find(t=>t.id===task||t.terms.some(term=>task.toLowerCase().includes(term)))?.id??"all";
   const resources=[...seeds,...(await localResources(context,task)).filter(r=>r.kind==="official_directory")].filter((r,i,a)=>a.findIndex(other=>other.url===r.url)===i).slice(0,2);
-  return (await Promise.all(resources.map(resource=>inspectGovernment(resource,task)))).flat().slice(0,6);
+  return (await Promise.all(resources.map(resource=>inspectGovernment(resource,normalizedTask)))).flat().slice(0,6);
 }
