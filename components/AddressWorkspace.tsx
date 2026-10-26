@@ -10,11 +10,9 @@ export function AddressWorkspace({ address, initialReport }: { address: string; 
   const [revision, setRevision] = useState(0);
   const [completed, setCompleted] = useState<string[]>([]);
   const [requested, setRequested] = useState(false);
-  useEffect(() => { setReport(initialReport); setError(""); setCompleted([]); setRequested(false); }, [address, initialReport]);
   useEffect(() => {
     if (!requested) return;
     const controller = new AbortController();
-    setReport(undefined); setCompleted([]); setError(""); setLoading(true);
     fetch("/api/location/workspace", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address }), signal: controller.signal })
       .then(async response => { const data = await response.json(); if (!response.ok) throw new Error(data.message ?? "Address report unavailable."); if (!controller.signal.aborted) setReport(data); })
       .catch(err => { if (!controller.signal.aborted) setError(err.message ?? "Address report unavailable."); })
@@ -22,7 +20,7 @@ export function AddressWorkspace({ address, initialReport }: { address: string; 
     return () => controller.abort();
   }, [address, requested, revision]);
   return <section className="address-workspace" aria-label="Address-specific findings and guides">
-    <div className="address-workspace__heading"><div><p className="section-label">At your address</p><h2>Turn the location into a plan.</h2></div><button type="button" disabled={loading} onClick={() => { setRequested(true); setRevision(r => r + 1); }}>{loading ? "Checking official maps…" : report ? "Refresh findings" : "Build my address report"}</button></div>
+    <div className="address-workspace__heading"><div><p className="section-label">At your address</p><h2>Turn the location into a plan.</h2></div><button type="button" disabled={loading} onClick={() => { setReport(undefined); setCompleted([]); setError(""); setLoading(true); setRequested(true); setRevision(r => r + 1); }}>{loading ? "Checking official maps…" : report ? "Refresh findings" : "Build my address report"}</button></div>
     <p>Look up mapped flood zones, school-district geography, and—in Los Angeles County—candidate parcels and zoning. Your checklist changes with the records returned.</p>
     <p className="privacy-note">This sends the address to Census and matched coordinates to FEMA and, for LA County, the county GIS service. Govroute does not save the address or findings. Nothing is sent to an AI model. Clearing the location removes this report.</p>
     <div aria-live="polite" aria-busy={loading}>
