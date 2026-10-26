@@ -10,12 +10,15 @@ import { DiscoveredGuideResult } from "@/components/DiscoveredGuideResult";
 import type { DiscoveredGuide } from "@/lib/discovered-guides";
 import type { LocalResource } from "@/lib/local-resources";
 import { LocationPicker } from "@/components/LocationPicker";
+import { AddressWorkspace } from "@/components/AddressWorkspace";
+import type { AddressWorkspace as AddressReport } from "@/lib/address-workspace";
 import { LocationOverview } from "@/components/LocationOverview";
 import type { PlaceContext } from "@/lib/place-registry";
 
 type ApiResponse =
+  | { status: "address_guidance"; message: string; workspace: AddressReport; alternatives: [] }
   | { status: "coverage_gap"; title?: string; directoryResources?: LocalResource[]; message: string; steps: string[]; sources: { id: string; title: string; url: string; publisher: string }[]; missing: string[]; scopeNote: string; alternatives: [] }
-  | { status: "matched"; message: string; journey: Journey; provenance: { router: string; storage: string; processStorage?: string; assembledFrom: string[] }; alternatives: { id: string; slug: string; title: string }[] }
+  | { status: "matched"; message: string; journey: Journey; workspace?: AddressReport; provenance: { router: string; storage: string; processStorage?: string; assembledFrom: string[] }; alternatives: { id: string; slug: string; title: string }[] }
   | { status: "discovered"; message: string; guide: DiscoveredGuide; provenance: { router: string; assembledFrom: string[] }; alternatives: { id: string; slug: string; title: string; summary?: string; href?: string }[] }
   | { status: "clarify" | "unsupported" | "blocked" | "error"; message: string; alternatives: { id: string; slug: string; title: string; summary?: string; href?: string }[]; officialSearchUrl?: string };
 
@@ -93,6 +96,8 @@ export function GuideSearch() {
         {locationContext && <LocationOverview context={locationContext} />}
       </form>
 
+      {locationAddress && result?.status !== "address_guidance" && !(result?.status === "matched" && result.workspace) && <AddressWorkspace key={locationAddress} address={locationAddress} />}
+
       {!submitted && (
         <div className="examples" aria-label="Example requests">
           <span>Try an example</span>
@@ -104,9 +109,11 @@ export function GuideSearch() {
 
       <div className="answer-region" aria-live="polite" aria-busy={loading} ref={resultRef} tabIndex={-1}>
         {loading && <SearchSkeleton query={submitted} />}
+        {result?.status === "address_guidance" && locationAddress && <AddressWorkspace key={locationAddress} address={locationAddress} initialReport={result.workspace} />}
         {result?.status === "matched" && (
           <>
             <div className="query-line"><span>You asked</span><p>{submitted}</p></div>
+            {locationAddress && result.workspace && <AddressWorkspace key={locationAddress} address={locationAddress} initialReport={result.workspace} />}
             <GuideResult journey={result.journey} />
             <details className="trace-details">
               <summary>How this answer was assembled</summary>
@@ -121,7 +128,7 @@ export function GuideSearch() {
           <details className="trace-details"><summary>Why this result was selected</summary><p>Your request matched a published government task whose source, task title, page content, and crawl record passed the automated publication checks.</p><Link href={`/guides/${result.guide.slug}`}>Open the permanent guide</Link></details>
         </>}
         {result?.status === "coverage_gap" && <section className="pathway-gap"><p className="section-label">{result.title ?? "Find the rules for your property"}</p><h2>Here is the next useful step.</h2><p>{result.message}</p><ol>{result.steps.map((step) => <li key={step}>{step}</li>)}</ol><p>{result.scopeNote}</p><details className="missing-evidence"><summary>What still needs confirmation</summary><ul>{result.missing.map(item=><li key={item}>{item}</li>)}</ul></details>{result.sources.length > 0 && <ul>{result.sources.map((source) => <li key={source.id}><a href={source.url} target="_blank" rel="noreferrer">{source.title} · {source.publisher}</a></li>)}</ul>}{Boolean(result.directoryResources?.length) && <div><h3>Official local starting points</h3><p>These websites match the registered government organization. The procedure and service area still need confirmation.</p><ul>{result.directoryResources?.map(resource=><li key={resource.id}><a href={resource.url} target="_blank" rel="noreferrer">{resource.title} · {resource.placeName}</a><span> · {resource.kind==="indexed_page" ? "Crawled "+resource.retrievedAt.slice(0,10)+"; instructions unreviewed" : "Official registration; procedure unreviewed"}</span>{["unavailable","blocked"].includes(resource.lastCheckStatus) && <span> · Latest automated crawl unavailable</span>}</li>)}</ul></div>}</section>}
-        {result && result.status !== "matched" && result.status !== "discovered" && result.status !== "coverage_gap" && (
+        {result && result.status !== "matched" && result.status !== "discovered" && result.status !== "coverage_gap" && result.status !== "address_guidance" && (
           <div className={`notice notice--${result.status}`} role={result.status === "error" || result.status === "blocked" ? "alert" : undefined}>
             <p>{result.message}</p>
             {result.alternatives?.length > 0 && <div className="notice-options">{result.alternatives.map((item) => <Link key={item.id} href={item.href ?? `/guides/${item.slug}`}><strong>{item.title}</strong>{item.summary && <span>{item.summary}</span>}</Link>)}</div>}
@@ -148,3 +155,4 @@ function SearchSkeleton({ query }: { query: string }) {
     </div>
   );
 }
+
