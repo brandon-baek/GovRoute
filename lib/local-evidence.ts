@@ -40,7 +40,8 @@ export async function addressLocalActions(context: PlaceContext | undefined, tas
   let procedures: Journey[] = [];
   try {
     const catalog = await publishedProcesses(state, publicationPlaceIds(context, selected), context);
-    procedures = catalog.journeys.filter(j => j.jurisdiction === "local");
+    const requestedTopic=localTopics.find(t=>t.id===task||t.terms.some(term=>normalize(task).includes(normalize(term))));
+    procedures = catalog.journeys.filter(j => j.jurisdiction === "local" && (!requestedTopic||topicForPage(j.title,j.officialAction?.url??"").some(t=>t.id===requestedTopic.id)));
   } catch { empty.unavailable = true; }
   try {
     const db = await openRegistry();
@@ -64,7 +65,7 @@ export async function addressLocalActions(context: PlaceContext | undefined, tas
       const topics = topicForPage(row.title, row.url);
       const topic = requested ? topics.find(t => t.id === requested.id) : topics[0];
       if (!topic) continue;
-      const excerpts = extractLocalPassages(row.content.slice(0, 150000), topic.terms);
+      const excerpts = extractLocalPassages(row.content.slice(0, 150000), topic.terms).filter(line=>normalize(line)!==normalize(row.title));
       if (!excerpts.length) continue;
       used.add(row.url);
       const old = !Number.isFinite(Date.parse(row.retrieved_at)) || Date.now() - Date.parse(row.retrieved_at) > 30 * 86400000;

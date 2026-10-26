@@ -19,6 +19,11 @@ describe("address-specific map evidence and generated guides", () => {
     expect((await parcelByAddress(address(),fetcher({features:[{attributes:{AIN:"1234567890",SitusFullAddress:"2809 FOOTHILL BLVD"}},{attributes:{AIN:"1234567891",SitusFullAddress:"2809 FOOTHILL BLVD"}}]}))).finding.status).toBe("ambiguous");
     expect((await parcelByAddress(address(),fetcher({features:[{attributes:{AIN:"1234567890",SitusFullAddress:"2809 FOOTHILL BLVDOTHER"}}]}))).finding.status).toBe("ambiguous");
   });
+  it("bounds assessor street matches to the verified address and offers unit choices",async()=>{
+    let parameters=new URLSearchParams();
+    const result=await parcelByAddress(address(),async(_url,init)=>{parameters=new URLSearchParams(String(init?.body));return json({features:[{attributes:{AIN:"1234567890",SitusFullAddress:"2809 FOOTHILL BLVD",SitusUnit:"A"}},{attributes:{AIN:"1234567891",SitusFullAddress:"2809 FOOTHILL BLVD",SitusUnit:"B"}}]});});
+    expect(parameters.get("distance")).toBe("150");expect(parameters.get("geometry")).toBe("-118.24,34.21");expect(result.finding.candidates).toHaveLength(2);
+  });
   it("queries reviewed endpoints with a point, never the street address", async () => {
     let called = ""; let params = "";
     const finding = await pointFinding("zoning", address(), async (url, init) => { called = String(url); params = String(init?.body); expect(init?.cache).toBe("no-store"); expect(init?.redirect).toBe("error"); return json({ features: [{ attributes: { ZONE: "R-1", Z_DESC: "Single family", PLNG_AREA: "Crescenta Valley" } }] }); });
