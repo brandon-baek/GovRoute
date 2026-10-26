@@ -1,6 +1,6 @@
-# GovGuide
+# Govroute
 
-GovGuide focuses on state and local government services, including cross-state driving and vehicle moves. Reviewed guides contain checked steps; crawler-discovered guides provide a permanent, source-linked starting point while deeper instructions await review.
+Govroute focuses on state and local government services, including cross-state driving and vehicle moves. Reviewed guides contain checked steps; crawler-discovered guides provide a permanent, source-linked starting point while deeper instructions await review.
 
 ## Current MVP
 
@@ -8,7 +8,7 @@ GovGuide focuses on state and local government services, including cross-state d
 - interstate moving planner with checked destination guidance for CA, TX, and NY; other destinations explicitly show limited coverage
 - one shared pathway dataset for the Guides index, guidance retrieval, permanent pages, sitemap, and knowledge graph
 - SQLite database with migrations, foreign keys, integrity checks, FTS5 search, source snapshots, ingestion runs, and GNN review tables
-- free deterministic intent retrieval; paid classification requires GOVGUIDE_ENABLE_PAID_AI=true and only runs for ambiguous reviewed matches
+- free deterministic intent retrieval; paid classification requires GOVROUTE_ENABLE_PAID_AI=true and only runs for ambiguous reviewed matches
 - Python USA.gov and CA.gov sitemap crawlers with robots enforcement, bounded workers, retries, rate limiting, size limits, content hashing, and failure reports
 - paginated Python SAM.gov Assistance Listings API connector with retry and key-gated access
 - automatic crawler-to-SQLite ingestion with source snapshots and run history
@@ -67,19 +67,19 @@ The default database is `data/govguide.db`. The migration in `database/migration
 - `ingestion_runs` and `source_snapshots`
 - `gnn_suggestions` with pending, accepted, or rejected review state
 
-Set `GOVGUIDE_DB_PATH` to use a different file. The schema uses conservative SQL types and constraints so a later PostgreSQL migration is straightforward.
+Set `GOVROUTE_DB_PATH` to use a different file. The schema uses conservative SQL types and constraints so a later PostgreSQL migration is straightforward.
 
 ## Autonomous refresh and deployment
 
-The GitHub Actions workflow in `.github/workflows/data-refresh.yml` runs on the 1st and 15th of each month, or can be started with **Actions → GovGuide data refresh → Run workflow**. It refreshes official directories, advances through rotating federal and state domain batches, prioritizes unseen action-oriented pages while reserving capacity for the oldest previously indexed pages, generates `data/generated/discovered-guides.json`, checks curated links, validates SQLite, and builds the Vercel configuration. SAM.gov ingestion is included when the optional `SAM_API_KEY` repository secret is present.
+The GitHub Actions workflow in `.github/workflows/data-refresh.yml` runs on the 1st and 15th of each month, or can be started with **Actions → Govroute data refresh → Run workflow**. It refreshes official directories, advances through rotating federal and state domain batches, prioritizes unseen action-oriented pages while reserving capacity for the oldest previously indexed pages, generates `data/generated/discovered-guides.json`, checks curated links, validates SQLite, and builds the Vercel configuration. SAM.gov ingestion is included when the optional `SAM_API_KEY` repository secret is present.
 
 After every check succeeds, the workflow commits only `data/govguide.db` and generated source-index reports to `main`. Keep the GitHub repository connected to the Vercel project with `main` as its production branch; Vercel then deploys the refreshed read-only database snapshot. No hosted database or Vercel API token is needed. On Vercel, the SQLite connection opens read-only because function filesystems are not durable storage.
 
-Crawler output stays marked `machine-indexed` and appears publicly as a discovered guide. It can be browsed, matched, graphed, and opened at a permanent URL, while reviewed steps remain a separate trust level. Pages with too little useful content remain visible inside GovGuide but are kept out of the XML sitemap until they meet the search-quality gate. All crawls, guide export, SQLite integrity, native SQLite load, and production build must succeed before the workflow pushes data.
+Crawler output stays marked `machine-indexed` and appears publicly as a discovered guide. It can be browsed, matched, graphed, and opened at a permanent URL, while reviewed steps remain a separate trust level. Pages with too little useful content remain visible inside Govroute but are kept out of the XML sitemap until they meet the search-quality gate. All crawls, guide export, SQLite integrity, native SQLite load, and production build must succeed before the workflow pushes data.
 
 ### Why SQLite for the MVP?
 
-SQLite is an intentional MVP choice, not a placeholder masquerading as a database. GovGuide's current workload is read-heavy, the reviewed dataset fits comfortably in one relational file, and the app does not yet need multiple servers writing concurrently. SQLite gives the prototype real foreign keys, transactions, indexes, full-text search, migrations, and integrity checks without requiring a cloud database account during a classroom demonstration. It also makes the result reproducible: a teacher can open the exact populated database in `data/govguide.db` instead of depending on a remote service. The tables and constraints are kept portable so the project can move to PostgreSQL when hosting, concurrent writes, or larger-scale ingestion makes that operational complexity worthwhile.
+SQLite is an intentional MVP choice, not a placeholder masquerading as a database. Govroute's current workload is read-heavy, the reviewed dataset fits comfortably in one relational file, and the app does not yet need multiple servers writing concurrently. SQLite gives the prototype real foreign keys, transactions, indexes, full-text search, migrations, and integrity checks without requiring a cloud database account during a classroom demonstration. It also makes the result reproducible: a teacher can open the exact populated database in `data/govguide.db` instead of depending on a remote service. The tables and constraints are kept portable so the project can move to PostgreSQL when hosting, concurrent writes, or larger-scale ingestion makes that operational complexity worthwhile.
 
 To inspect the populated database directly:
 
@@ -119,7 +119,7 @@ Set `NEXT_PUBLIC_SITE_URL` to the canonical production origin. Optional guide ad
 - Treat HTTP 403 responses from government anti-bot systems separately from confirmed 404s during source review.
 - Run the full test, build, database integrity, and source-health gates before deployment.
 
-GovGuide is an independent educational project. It provides public information, not legal advice, and hands transactions back to official government sites.
+Govroute is an independent educational project. It provides public information, not legal advice, and hands transactions back to official government sites.
 
 ## Cost and abuse controls
 

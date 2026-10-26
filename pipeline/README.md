@@ -1,4 +1,4 @@
-# GovGuide Python data pipeline
+# Govroute Python data pipeline
 
 The data system is separate from the TypeScript web application. Running `python3 -m pipeline.run` performs the complete acquisition path:
 
