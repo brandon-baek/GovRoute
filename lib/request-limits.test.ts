@@ -7,8 +7,8 @@ describe("bounded request and paid-route guards", () => {
     expect(consumeRequest("test-address",61000)).toBe(true);
   });
   it("requires opt-in, caps calls, and resets hourly", () => {
-    vi.stubEnv("GOVGUIDE_ENABLE_PAID_AI","false"); expect(consumeAIRoute(1000)).toBe(false);
-    vi.stubEnv("GOVGUIDE_ENABLE_PAID_AI","true"); vi.stubEnv("GOVGUIDE_AI_ROUTES_PER_HOUR","2");
+    vi.stubEnv("GOVROUTE_ENABLE_PAID_AI","false"); expect(consumeAIRoute(1000)).toBe(false);
+    vi.stubEnv("GOVROUTE_ENABLE_PAID_AI","true"); vi.stubEnv("GOVROUTE_AI_ROUTES_PER_HOUR","2");
     expect(consumeAIRoute(1000)).toBe(true); expect(consumeAIRoute(1000)).toBe(true); expect(consumeAIRoute(1000)).toBe(false);
     expect(consumeAIRoute(3601000)).toBe(true); vi.unstubAllEnvs();
   });

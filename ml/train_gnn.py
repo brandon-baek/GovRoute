@@ -1,4 +1,4 @@
-"""Train a small GraphSAGE encoder over GovGuide's reviewed graph.
+"""Train a small GraphSAGE encoder over Govroute's reviewed graph.
 
 This dependency-light implementation uses NumPy and manual backpropagation. It
 only emits candidate related-to edges for human review; it never changes facts.

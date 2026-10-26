@@ -9,7 +9,7 @@ const routeSchema = z.object({
 });
 
 export async function routeWithAI(message: string, candidateIds: string[]) {
-  if (process.env.GOVGUIDE_ENABLE_PAID_AI !== "true" || !process.env.OPENAI_API_KEY || candidateIds.length === 0) return null;
+  if ((process.env.GOVROUTE_ENABLE_PAID_AI ?? process.env.GOVGUIDE_ENABLE_PAID_AI) !== "true" || !process.env.OPENAI_API_KEY || candidateIds.length === 0) return null;
 
   const candidates = journeys
     .filter((journey) => candidateIds.includes(journey.id))
@@ -26,7 +26,7 @@ export async function routeWithAI(message: string, candidateIds: string[]) {
       },
       { role: "user", content: JSON.stringify({ request: message, candidates }) }
     ],
-    text: { format: { type:"json_schema",name:"govguide_route",strict:true,schema:{type:"object",properties:{journeyId:{type:["string","null"]},confidence:{type:"number"},reason:{type:"string"}},required:["journeyId","confidence","reason"],additionalProperties:false} } }
+    text: { format: { type:"json_schema",name:"govroute_route",strict:true,schema:{type:"object",properties:{journeyId:{type:["string","null"]},confidence:{type:"number"},reason:{type:"string"}},required:["journeyId","confidence","reason"],additionalProperties:false} } }
   });
 
   const checked=routeSchema.safeParse(JSON.parse(response.output_text));

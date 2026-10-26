@@ -1,6 +1,6 @@
 # Experimental GNN layer
 
-GovGuide's reviewed knowledge graph remains authoritative. The optional GraphSAGE encoder learns from graph topology plus hashed text features and proposes `related-to` edges between journeys.
+Govroute's reviewed knowledge graph remains authoritative. The optional GraphSAGE encoder learns from graph topology plus hashed text features and proposes `related-to` edges between journeys.
 
 It is intentionally separated from the user-facing answer path:
 

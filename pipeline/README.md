@@ -1,4 +1,4 @@
-# GovGuide Python data pipeline
+# Govroute Python data pipeline
 
 The data system is separate from the TypeScript web application. Running `python3 -m pipeline.run` performs the complete acquisition path:
 
@@ -7,7 +7,7 @@ The data system is separate from the TypeScript web application. Running `python
 3. Select same-origin pages and crawl them with bounded workers, a shared rate gate, retries, timeouts, and response-size limits.
 4. Extract the page title, summary, headings, canonical URL, response metadata, and a SHA-256 content fingerprint.
 5. Normalize each page into a typed graph node and connect it to its publisher.
-6. Upsert those nodes, edges, official sources, source snapshots, and ingestion-run results into `data/govguide.db` in a transaction.
+6. Upsert those nodes, edges, official sources, source snapshots, and ingestion-run results into `data/govroute.db` in a transaction.
 7. Export the complete SQL graph to `data/generated/graph.json`.
 
 `domain_catalog.py` imports CISA's complete daily `.gov` registry, the federal-only registry, and USA.gov's state/territory directory with links to their listed state government and agency sites. These catalog records remain discovery data, not verified instructions. `sam_crawler.py` uses SAM.gov's structured Assistance Listings API instead of scraping HTML. It paginates until the configured record limit.

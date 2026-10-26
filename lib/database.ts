@@ -9,10 +9,10 @@ let singleton: Database.Database | null = null;
 
 export function openDatabase(filename?: string) {
   const deployedOnVercel = Boolean(process.env.VERCEL);
-  const configuredFilename = filename ?? process.env.GOVGUIDE_DB_PATH;
+  const configuredFilename = filename ?? (process.env.GOVROUTE_DB_PATH ?? process.env.GOVGUIDE_DB_PATH);
   let databasePath: string;
   if (deployedOnVercel) {
-    // Vercel builds can expose GOVGUIDE_DB_PATH=:memory:; functions must read
+    // Vercel builds can expose a database override as :memory:; functions must read
     // the packaged snapshot. Search from the runtime cwd because function bundles
     // can be rooted below the project directory, and ignore stale relative paths.
     const roots: string[] = [];
@@ -28,10 +28,10 @@ export function openDatabase(filename?: string) {
         ? [configuredFilename]
         : roots.map((candidateRoot) => path.resolve(candidateRoot, configuredFilename))
       : [];
-    const snapshotCandidates = roots.map((candidateRoot) => path.join(candidateRoot, "data", "govguide.db"));
+    const snapshotCandidates = roots.map((candidateRoot) => path.join(candidateRoot, "data", "govroute.db"));
     databasePath = [...configuredCandidates, ...snapshotCandidates].find((candidate) => existsSync(candidate)) ?? snapshotCandidates[0];
   } else {
-    databasePath = configuredFilename ?? path.join(process.cwd(), "data", "govguide.db");
+    databasePath = configuredFilename ?? path.join(process.cwd(), "data", "govroute.db");
   }
   if (!deployedOnVercel) mkdirSync(path.dirname(databasePath), { recursive: true });
   const database = new Database(databasePath, deployedOnVercel ? { readonly: true, fileMustExist: true } : {});

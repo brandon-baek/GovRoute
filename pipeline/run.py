@@ -25,12 +25,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def arguments() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Crawl government sources and populate GovRoute SQLite automatically.")
+    parser = argparse.ArgumentParser(description="Crawl government sources and populate Govroute SQLite automatically.")
     parser.add_argument("--source", choices=("all", "local", "usagov", "california", "sam", "federal-directory", "federal-sites", "government-domain-directory", "government-sites", "state-directory", "state-sites"), default="all")
-    parser.add_argument("--limit", type=int, default=int(os.getenv("GOVGUIDE_CRAWL_LIMIT", "40")))
-    parser.add_argument("--workers", type=int, default=int(os.getenv("GOVGUIDE_CRAWL_WORKERS", "16")))
-    parser.add_argument("--delay", type=float, default=float(os.getenv("GOVGUIDE_CRAWL_DELAY_SECONDS", "0.25")))
-    parser.add_argument("--database", type=Path, default=ROOT / "data/govguide.db")
+    parser.add_argument("--limit", type=int, default=int(os.getenv("GOVROUTE_CRAWL_LIMIT", os.getenv("GOVGUIDE_CRAWL_LIMIT", "40"))))
+    parser.add_argument("--workers", type=int, default=int(os.getenv("GOVROUTE_CRAWL_WORKERS", os.getenv("GOVGUIDE_CRAWL_WORKERS", "16"))))
+    parser.add_argument("--delay", type=float, default=float(os.getenv("GOVROUTE_CRAWL_DELAY_SECONDS", os.getenv("GOVGUIDE_CRAWL_DELAY_SECONDS", "0.25"))))
+    parser.add_argument("--database", type=Path, default=ROOT / "data/govroute.db")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "data/generated")
     parser.add_argument("--domain-limit", type=int, default=50, help="Maximum domains in federal-sites/state-sites mode; use 0 for the whole directory. all mode always crawls every listed domain.")
     parser.add_argument("--domain-offset", type=int, default=0, help="Skip this many domains for resumable batches.")
@@ -49,7 +49,7 @@ def main() -> None:
             except sqlite3.OperationalError:
                 known_urls = {}
     policy = HttpPolicy(
-        user_agent=os.getenv("GOVGUIDE_USER_AGENT", "GovRoute/1.0 educational civic navigator; contact repository owner"),
+        user_agent=os.getenv("GOVROUTE_USER_AGENT", os.getenv("GOVGUIDE_USER_AGENT", "Govroute/1.0 educational civic navigator; contact repository owner")),
         delay_seconds=args.delay,
     )
     results = []

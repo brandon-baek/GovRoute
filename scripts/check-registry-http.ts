@@ -7,7 +7,7 @@ import Database from "better-sqlite3";
 async function main() {
 const db=new Database("data/govroute-runtime.db",{readonly:true});
 const port=3100,base="http://127.0.0.1:"+port;
-const server=spawn(process.execPath,["node_modules/next/dist/bin/next","start","--port",String(port)],{env:{...process.env,GOVGUIDE_ENABLE_PAID_AI:"false",GOVROUTE_REGISTRY_COMPRESSED:"true",GOVROUTE_REGISTRY_MANIFEST_PATH:"data/govroute-runtime.manifest.json"}});
+const server=spawn(process.execPath,["node_modules/next/dist/bin/next","start","--port",String(port)],{env:{...process.env,GOVROUTE_ENABLE_PAID_AI:"false",GOVROUTE_REGISTRY_COMPRESSED:"true",GOVROUTE_REGISTRY_MANIFEST_PATH:"data/govroute-runtime.manifest.json"}});
 let logs=""; server.stdout.on("data",chunk=>{logs=(logs+chunk).slice(-12000);});server.stderr.on("data",chunk=>{logs=(logs+chunk).slice(-12000);});
 let counter=0;
 const results:{scenario:string;status:string;milliseconds:number}[]=[];

@@ -281,7 +281,7 @@ const legacyJourneys: Journey[] = [
     steps: [
       { id: "read", title: "Identify what the notice asks", detail: "Use the notice number and explanation printed on the letter. A notice may request information, explain a change, or require payment or a response.", sourceIds: ["irs-notice"] },
       { id: "compare", title: "Compare the notice with your records", detail: "Check the tax year, amounts, and issue against your filed return and supporting documents before responding.", sourceIds: ["irs-notice"] },
-      { id: "respond", title: "Follow the notice-specific instructions", detail: "Respond using the address, phone number, online tool, and date printed on the notice. Keep copies of everything you send.", sourceIds: ["irs-notice"], caution: "GovGuide cannot determine a legal deadline from a generic question; use the date on your actual notice." }
+      { id: "respond", title: "Follow the notice-specific instructions", detail: "Respond using the address, phone number, online tool, and date printed on the notice. Keep copies of everything you send.", sourceIds: ["irs-notice"], caution: "Govroute cannot determine a legal deadline from a generic question; use the date on your actual notice." }
     ],
     sources: [{ id: "irs-notice", title: "Understanding Your IRS Notice or Letter", url: "https://www.irs.gov/individuals/understanding-your-irs-notice-or-letter", publisher: "Internal Revenue Service", lastChecked: checked }]
   },

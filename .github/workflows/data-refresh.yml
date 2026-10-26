@@ -1,4 +1,4 @@
-name: GovGuide data refresh
+name: Govroute data refresh
 
 on:
   schedule:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: govguide-data-refresh
+  group: govroute-data-refresh
   cancel-in-progress: false
 
 jobs:
@@ -46,8 +46,8 @@ jobs:
         run: python -m pipeline.run --source local
         env:
           SAM_API_KEY: ${{ secrets.SAM_API_KEY }}
-          GOVGUIDE_CRAWL_LIMIT: 40
-          GOVGUIDE_USER_AGENT: GovGuide/1.0 (scheduled source review; github.com/brandon-baek/Project-Gov)
+          GOVROUTE_CRAWL_LIMIT: 40
+          GOVROUTE_USER_AGENT: Govroute/1.0 (scheduled source review; github.com/brandon-baek/GovRoute)
 
       - name: Restore the pinned national serving snapshot
         run: node scripts/prepare-registry.mjs
@@ -93,7 +93,7 @@ jobs:
           import sqlite3
           import sys
 
-          db = sqlite3.connect("data/govguide.db")
+          db = sqlite3.connect("data/govroute.db")
           integrity = db.execute("PRAGMA integrity_check").fetchone()[0]
           if integrity != "ok":
               sys.exit(f"SQLite integrity check failed: {integrity}")
@@ -130,7 +130,7 @@ jobs:
         run: |
           VERCEL=1 node - <<'NODE'
           const Database = require("better-sqlite3");
-          const db = new Database("data/govguide.db", { readonly: true, fileMustExist: true });
+          const db = new Database("data/govroute.db", { readonly: true, fileMustExist: true });
           const { count } = db.prepare("SELECT COUNT(*) AS count FROM journeys").get();
           if (count === 0) throw new Error("No journeys were found in the release database");
           console.log(`Read-only SQLite check passed (${count} journeys)`);
@@ -159,13 +159,13 @@ jobs:
           import json, os
           from pathlib import Path
           manifest=json.loads(Path("data/govroute-runtime.manifest.json").read_text())
-          manifest["url"]="https://github.com/brandon-baek/Project-Gov/releases/download/registry-"+os.environ["GITHUB_SHA"]+"-"+os.environ["GITHUB_RUN_ID"]+"/govroute-runtime.db.gz"
+          manifest["url"]="https://github.com/brandon-baek/GovRoute/releases/download/registry-"+os.environ["GITHUB_SHA"]+"-"+os.environ["GITHUB_RUN_ID"]+"/govroute-runtime.db.gz"
           Path("data/registry/runtime-release.json").write_text(json.dumps(manifest,indent=2)+"\n")
           PY
 
       - name: Publish refreshed data to the production branch
         run: |
-          git add -- data/govguide.db data/generated/*.json data/registry/runtime-release.json
+          git add -- data/govroute.db data/generated/*.json data/registry/runtime-release.json
           if git diff --cached --quiet; then
             echo "No generated data changed; nothing to publish."
             exit 0
